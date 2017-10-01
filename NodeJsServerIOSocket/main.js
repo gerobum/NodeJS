@@ -1,10 +1,3 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
 var http = require('http');
 var fs = require('fs');
 
@@ -18,9 +11,23 @@ var server = http.createServer(function(req, res) {
 
 // Chargement de socket.io
 var io = require('socket.io').listen(server);
-// Quand un client se connecte, on le note dans la console
-io.sockets.on('connection', function (socket) {
-    console.log('Un client est connecté !');
+
+io.sockets.on('connection', function (socket, pseudo) {
+    // Quand un client se connecte, on lui envoie un message
+    socket.emit('message', 'Vous êtes bien connecté !');
+    // On signale aux autres clients qu'il y a un nouveau venu
+    socket.broadcast.emit('message', 'Un autre client vient de se connecter ! ');
+
+    // Dès qu'on nous donne un pseudo, on le stocke en variable de session
+    socket.on('petit_nouveau', function(pseudo) {
+        socket.pseudo = pseudo;
+    });
+
+    // Dès qu'on reçoit un "message" (clic sur le bouton), on le note dans la console
+    socket.on('message', function (message) {
+        // On récupère le pseudo de celui qui a cliqué dans les variables de session
+        console.log(socket.pseudo + ' me parle ! Il me dit : ' + message);
+    }); 
 });
 
 
