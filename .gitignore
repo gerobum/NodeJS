@@ -1,3 +1,4 @@
+processPM2/
 **/node_modules/
 *.kate-swp
 /todolist/nbproject/private/
