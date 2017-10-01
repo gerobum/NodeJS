@@ -2,41 +2,45 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>Super Chat temps réel !</title>
+        <title>Notre todolist partagée</title>
         <style>
-            #zone_chat strong {
+            #zone_task strong {
                 color: white;
                 background-color: black;
+                padding: 2px;
+            }
+            #zone_task em {
+                color: black;
+                background-color: wheat;
                 padding: 2px;
             }
         </style>
     </head>
  
     <body>
-        <h1>Notre todolist partagée</h1>
+        <h1>Notre liste de tâches partagée</h1>
 
         <ul id="zone_task">
-            <!--<li><a href="/todo/down/<%= index %>"> ↓ </a><a href="/todo/up/<%= index %>"> ↑ </a><a href="/todo/supprimer/<%= index %>"> ✘ </a> <%= todo %></li>-->
         </ul>
 
         <form action="/todo/ajouter/" method="post" id="formulaire_ajout">
                 <label for="newtodo">Que devons-nous faire ?</label>
                 <input type="text" size="50" name="newtodo" id="newtodo" placeholder="Entrez une tâche..." autofocus />
         </form>
-        <div id="zone_chat">
-            
-        </div>
 
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
+        <script>
+        function one_task(i, todo) {
+            return '<li><span onclick="up('+i+')"> (↑) </span><span onclick="down('+i+')"> (↓) </span><span onclick="sup('+i+')"> (✘) </span> ' + todo + '</li>';
+        }
+        </script>
         <script>
             // Lorsqu'on envoie le formulaire, on transmet le message et 
             // on l'affiche sur la page
             $('#formulaire_ajout').submit(function () {
                 var message = $('#newtodo').val();
-                console.log("ajout de la tâche " + message);
-                socket.emit('add_task', message); // Transmet le message aux autres
-                //insereMessage(pseudo, message); // Affiche le message aussi sur notre page
+                socket.emit('add_task', {message: message, pseudo: pseudo}); // Transmet le message aux autres
                 $('#newtodo').val('').focus(); // Vide la zone de Chat et remet le focus dessus
                 return false; // Permet de bloquer l'envoi "classique" du formulaire
             });
@@ -46,76 +50,25 @@
 
             // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
             var pseudo = prompt('Quel est votre pseudo ?');
-            //socket.emit('nouveau_client', pseudo);
-            document.title = pseudo + ' - ' + document.title;
-            
-            // Ajoute un message dans la page
-            function insereMessage(pseudo, message) {
-                $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
-            }
-
-            // Demande de mise à jout
-            socket.on('update', function(data) {
-                console.log("Nouvelle liste : " + data.todolist);
-                //$('#zone_task').val('');
-                for (var i in data.todolist) {
-                    console.log("tâche : " + data.todolist[i]);
-                    //$('#zone_task').append("<li>"+x+"</li>");
-                }
-                
-            });
-/*
-            // Quand on reçoit un message, on l'insère dans la page
-            socket.on('message', function(data) {
-                insereMessage(data.pseudo, data.message);
-            });
-
-            // Quand un nouveau client se connecte, on affiche l'information
-            socket.on('nouveau_client', function(pseudo) {
-                $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
-            });
-
-
-
-*/
-        </script>
-
-
-        <!--
-        <script>
-            // Connexion à socket.io
-            var socket = io.connect('http://localhost:8080');
-
-            // On demande le pseudo, on l'envoie au serveur et on l'affiche dans le titre
-            var pseudo = prompt('Quel est votre pseudo ?');
             socket.emit('nouveau_client', pseudo);
             document.title = pseudo + ' - ' + document.title;
 
-            // Quand on reçoit un message, on l'insère dans la page
-            socket.on('message', function(data) {
-                insereMessage(data.pseudo, data.message);
+            // Demande de mise à jour
+            socket.on('update', function (data) {
+                $('#zone_task').empty();
+                for (var i in data.todolist) {
+                    $('#zone_task').append(one_task(i, data.todolist[i]));
+                }
             });
-
-            // Quand un nouveau client se connecte, on affiche l'information
-            socket.on('nouveau_client', function(pseudo) {
-                $('#zone_chat').prepend('<p><em>' + pseudo + ' a rejoint le Chat !</em></p>');
-            });
-
-            // Lorsqu'on envoie le formulaire, on transmet le message et 
-            // on l'affiche sur la page
-            $('#formulaire_chat').submit(function () {
-                var message = $('#message').val();
-                socket.emit('message', message); // Transmet le message aux autres
-                insereMessage(pseudo, message); // Affiche le message aussi sur notre page
-                $('#message').val('').focus(); // Vide la zone de Chat et remet le focus dessus
-                return false; // Permet de bloquer l'envoi "classique" du formulaire
-            });
-            
-            // Ajoute un message dans la page
-            function insereMessage(pseudo, message) {
-                $('#zone_chat').prepend('<p><strong>' + pseudo + '</strong> ' + message + '</p>');
+            function sup(i) {
+                socket.emit('sup_task', i);
+            }
+            function up(i) {
+                socket.emit('up_task', i);
+            }
+            function down(i) {
+                socket.emit('down_task', i);
             }
         </script>
-        -->
     </body>
 </html>

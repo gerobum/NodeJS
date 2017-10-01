@@ -23,47 +23,64 @@ app.use(session({secret: 'todotopsecret'}))
         })
         /* On affiche la todolist et le formulaire */
         .get('/todo', function (req, res) {
-            res.render('todolist.ejs', {todolist: todolist});
-        })
-
-        /* On ajoute un élément à la todolist */
-        .post('/todo/ajouter/', urlencodedParser, function (req, res) {
-            //if (req.body.newtodo !== '') {
-            //    todolist.push(req.body.newtodo);
-            //}
-            console.log("/todo/ajouter");
-            res.redirect('/todo');
+            res.sendfile(__dirname + '/index.html');
         })
 
         /* Supprime un élément de la todolist */
         .get('/todo/supprimer/:id', function (req, res) {
             if (req.params.id !== '') {
-                todolist.splice(req.params.id, 1);
+                todolist(req.params.id, 1);
+                req.socket.emit('update', {todolist: todolist});
+                req.socket.broadcast.emit('update', {todolist: todolist});
             }
+            res.redirect('/todo');
+        })
+
+        /* On redirige vers la todolist si la page demandée n'est pas trouvée */
+        .use(function (req, res, next) {
             res.redirect('/todo');
         });
 
 io.sockets.on('connection', function (socket, pseudo) {
-    // Dès qu'on nous donne un pseudo, on le stocke en variable de session et on informe les autres personnes
+    // Dès qu'on nous donne un pseudo, on le stocke en variable de session et 
+    // on informe les autres personnes
     socket.on('nouveau_client', function (pseudo) {
         pseudo = ent.encode(pseudo);
         socket.pseudo = pseudo;
         socket.broadcast.emit('nouveau_client', pseudo);
-        console.log("nouveau : " + pseudo);
+        socket.emit('update', {todolist: todolist});
     });
-
-    // Dès qu'on reçoit un message, on récupère le pseudo de son auteur et on le transmet aux autres personnes
-    socket.on('message', function (message) {
-        message = ent.encode(message);
-        socket.broadcast.emit('message', {pseudo: socket.pseudo, message: message});
-    });
-    // Dès qu'on reçoit un message, on récupère le pseudo de son auteur et on le transmet aux autres personnes
-    socket.on('add_task', function (message) {
-        todolist.push(ent.encode(message));
-        //app.render('todolist.ejs', {todolist: todolist});
-        console.log("add_task : " + message + " " + todolist);
+    // Une tâche a été ajoutée
+    socket.on('add_task', function (pair) {
+        todolist.push("<strong>"+ent.encode(pair.message)+"</strong><em>   from [" + pair.pseudo + "]</em>");
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});
+    });
+    // Supprimer la tâche i
+    socket.on('sup_task', function (i) {
+        todolist.splice(i, 1);
+        socket.emit('update', {todolist: todolist});
+        socket.broadcast.emit('update', {todolist: todolist});
+    });
+    // Décaler la tâche i vers le haut
+    socket.on('up_task', function (i) {
+        if (i > 0) {
+            x = todolist[i - 1];
+            todolist[i - 1] = todolist[i];
+            todolist[i] = x;
+            socket.emit('update', {todolist: todolist});
+            socket.broadcast.emit('update', {todolist: todolist});
+        }
+    });
+    // Décaler la tâche i vers le bas
+    socket.on('down_task', function (i) {
+        if (i < todolist.length - 1) {
+            x = todolist[i + 1];
+            todolist[i + 1] = todolist[i];
+            todolist[i] = x;
+            socket.emit('update', {todolist: todolist});
+            socket.broadcast.emit('update', {todolist: todolist});
+        }
     });
 });
 
