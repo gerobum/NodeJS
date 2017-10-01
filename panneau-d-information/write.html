@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Bonjour Maman</title>
+        <style>
+            #zone_msg {
+                color: white;
+                background-color: #b5d592;
+                padding: 2px;
+            }
+            #zone_msg {
+                color: white;
+                background-color: #ffc520;
+                padding: 2px;
+            }
+            .cliquable {
+                cursor: pointer;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1 style="background-color: #008; color: antiquewhite;">Bonjour Maman</h1>        
+        <h2 style="background-color: #008; color: antiquewhite;">Nous sommes le <span id="div_date"></span></h2>
+        <h2 style="background-color: #008; color: antiquewhite;">Il est <span id="div_horloge"></span></h2>
+
+        <ul id="zone_msg">
+        </ul>
+
+        <form action="/todo/ajouter/" method="post" id="formulaire_ajout">
+            <input type="text" size="150" name="newtodo" id="newtodo" placeholder="Entrez un message" autofocus />
+        </form>
+
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            function one_msg(i, todo) {
+                //return '<li><span class="cliquable" onclick="up('+i+')"> (↑) </span><span class="cliquable" onclick="down('+i+')"> (↓) </span><span class="cliquable" onclick="sup('+i+')"> (✘) </span> ' + todo + '</li>';
+                var color;
+                if (i % 2 === 0) {
+                    color = "#b5d592";
+                } else {
+                    color = "#ffc520";
+                }
+                return "<p style=\"background-color: "+ color + ";\">" + todo + "</p>";
+
+            }
+        </script>
+        
+        
+        <script>
+            function horloge() {
+                var mois = ["janvier", "février", "mars", "avril", "mai", "juin", 
+                    "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+
+                var hm = document.getElementById("div_horloge");
+                var d = document.getElementById("div_date");
+                var date = new Date();
+                var str = date.getHours();
+                str += ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+                str += ':' + (date.getSeconds() < 10 ? '0' : '') + date.getSeconds();
+
+                hm.innerHTML = str;
+
+                str = "";
+
+                str += date.getDate() + " ";
+                str += mois[date.getMonth()] + " ";
+                str += date.getFullYear();
+
+                d.innerHTML = str;
+
+            }
+        </script>
+        <script>
+            window.onload = function () {
+                horloge();
+                setInterval(horloge, 1000);
+            };
+        </script>
+        <script>
+            // Connexion à socket.io
+            var socket = io.connect('http://localhost:8080');
+
+            document.title = "Bonjour Maman";
+
+            socket.emit('new', '');
+            // Lorsqu'on envoie le formulaire, on transmet le message et 
+            // on l'affiche sur la page
+            $('#formulaire_ajout').submit(function () {
+                var message = $('#newtodo').val();
+                socket.emit('add_msg', message); // Transmet le message aux autres
+                $('#newtodo').val('').focus(); // Vide la zone de Chat et remet le focus dessus
+                return false; // Permet de bloquer l'envoi "classique" du formulaire
+            });
+
+            // Demande de mise à jour
+            socket.on('update', function (data) {
+                $('#zone_msg').empty();
+                for (var i in data.todolist) {
+                    $('#zone_msg').append(one_msg(i, data.todolist[i]));
+                }
+            });
+            function sup(i) {
+                socket.emit('sup_msg', i);
+            }
+            function up(i) {
+                socket.emit('up_msg', i);
+            }
+            function down(i) {
+                socket.emit('down_msg', i);
+            }
+        </script>
+    </body>
+</html>

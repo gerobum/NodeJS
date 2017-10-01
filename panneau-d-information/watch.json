@@ -1,0 +1,7 @@
+{
+  "watch": true,
+  "ignore_watch" : ["node_modules", "nbproject", "package.json"],
+  "watch_options": {
+    "followSymlinks": false
+  }
+}
