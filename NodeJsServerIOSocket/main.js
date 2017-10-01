@@ -1,9 +1,10 @@
 var http = require('http');
 var fs = require('fs');
+var pseudoSet = [];
 
 // Chargement du fichier index.html affiché au client
-var server = http.createServer(function(req, res) {
-    fs.readFile('./index.html', 'utf-8', function(error, content) {
+var server = http.createServer(function (req, res) {
+    fs.readFile('./index.html', 'utf-8', function (error, content) {
         res.writeHead(200, {"Content-Type": "text/html"});
         res.end(content);
     });
@@ -14,20 +15,33 @@ var io = require('socket.io').listen(server);
 
 io.sockets.on('connection', function (socket, pseudo) {
     // Quand un client se connecte, on lui envoie un message
-    socket.emit('message', 'Vous êtes bien connecté !');
+    //socket.emit('message', 'Vous êtes bien connecté !');
     // On signale aux autres clients qu'il y a un nouveau venu
-    socket.broadcast.emit('message', 'Un autre client vient de se connecter ! ');
+    //socket.broadcast.emit('message', 'Un autre client vient de se connecter ! ');
 
     // Dès qu'on nous donne un pseudo, on le stocke en variable de session
-    socket.on('petit_nouveau', function(pseudo) {
-        socket.pseudo = pseudo;
+    socket.on('petit_nouveau', function (pseudo) {
+        if (typeof socket.pseudo === 'undefined') {
+            socket.pseudo = pseudo;
+            console.log(pseudo);
+            if (pseudoSet.indexOf(pseudo) >= 0) {
+                socket.emit('erreur', 'le pseudo ' + pseudo + ' existe déjà');
+            } else {
+                socket.emit('message', "t'es connecté en tant que " + pseudo);
+                socket.emit('connectes', pseudoSet);
+                pseudoSet.push(pseudo);
+                pseudoSet.forEach(function (i) {
+                    console.log("->" + i);
+                });
+            }
+        }
     });
 
     // Dès qu'on reçoit un "message" (clic sur le bouton), on le note dans la console
     socket.on('message', function (message) {
         // On récupère le pseudo de celui qui a cliqué dans les variables de session
         console.log(socket.pseudo + ' me parle ! Il me dit : ' + message);
-    }); 
+    });
 });
 
 
