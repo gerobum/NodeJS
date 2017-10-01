@@ -6,7 +6,7 @@
         <style>
             #zone_msg {
                 color: white;
-                background-color: #b5d592;
+                background-color: #5890AD;
                 padding: 2px;
             }
             #zone_msg {
@@ -16,17 +16,43 @@
             }
             .cliquable {
                 cursor: pointer;
+                background-color: #333;
+                color: #eee
+            }
+            .titre {
+                background-color: #008; 
+                color: antiquewhite; 
+                padding: 0 0 0 5px; 
+                margin: 0 0 0 0;
+                line-height:1em;
+                border-style: hidden;
+                font-family: "Bradley Hand", cursive, fantasy, Georgia, "DejaVu Serif", Norasi, serif;
+            }
+            .liste {
+                padding: 5px; 
+                margin: 0 0 0 0;
+                line-height:1em;
+                border-style: hidden;
+                font-family: Georgia, "DejaVu Serif", Norasi, serif;
+            }
+            .pair {
+                background-color: #BAFFA8;
+                color: #000;
+            }
+            .impair {
+                background-color: #FFFFD0;
+                color: #000;
             }
         </style>
     </head>
 
     <body>
-        <h1 style="background-color: #008; color: antiquewhite;">Bonjour Maman</h1>        
-        <h2 style="background-color: #008; color: antiquewhite;">Nous sommes le <span id="div_date"></span></h2>
-        <h2 style="background-color: #008; color: antiquewhite;">Il est <span id="div_horloge"></span></h2>
+        <h1 class="titre">Bonjour Maman</h1>        
+        <h2 class="titre">Nous sommes le <span id="div_date"></span></h2>
+        <h2 class="titre" style="padding-bottom: 5px;">Il est <span id="div_horloge"></span></h2>
 
-        <ul id="zone_msg">
-        </ul>
+        <div class="titre" id="zone_msg">
+        </div>
 
         <form action="/todo/ajouter/" method="post" id="formulaire_ajout">
             <input type="text" size="150" name="newtodo" id="newtodo" placeholder="Entrez un message" autofocus />
@@ -37,25 +63,25 @@
         <script>
             function one_msg(i, todo) {
                 //return '<li><span class="cliquable" onclick="up('+i+')"> (↑) </span><span class="cliquable" onclick="down('+i+')"> (↓) </span><span class="cliquable" onclick="sup('+i+')"> (✘) </span> ' + todo + '</li>';
-                var color;
+                var classe;
                 if (i % 2 === 0) {
-                    color = "#b5d592";
+                    classe = "pair";
                 } else {
-                    color = "#ffc520";
+                    classe = "impair";
                 }
-                return "<p style=\"background-color: "+ color + ";\">" + todo + "</p>";
+                return "<p class=\"liste "+ classe + "\"><span class=\"cliquable\" onclick=\"up("+i+")\"> (↑) </span><span class=\"cliquable\" onclick=\"down("+i+")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup("+i+")\"> (✘) </span><span>    " + todo + "</span></p>";
 
             }
         </script>
         
         
         <script>
-            function horloge() {
+            function horloge(doc) {
                 var mois = ["janvier", "février", "mars", "avril", "mai", "juin", 
                     "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
-                var hm = document.getElementById("div_horloge");
-                var d = document.getElementById("div_date");
+                var hm = doc.getElementById("div_horloge");
+                var d = doc.getElementById("div_date");
                 var date = new Date();
                 var str = date.getHours();
                 str += ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
@@ -74,10 +100,10 @@
             }
         </script>
         <script>
-            window.onload = function () {
-                horloge();
-                setInterval(horloge, 1000);
-            };
+            //window.onload = function () {
+                horloge(document);
+                setInterval(horloge, 1000, document);
+            //};
         </script>
         <script>
             // Connexion à socket.io
@@ -98,9 +124,12 @@
             // Demande de mise à jour
             socket.on('update', function (data) {
                 $('#zone_msg').empty();
+                    console.log(" debut update ");
                 for (var i in data.todolist) {
+                    console.log("update " + i);
                     $('#zone_msg').append(one_msg(i, data.todolist[i]));
                 }
+                    console.log(" fin update ");
             });
             function sup(i) {
                 socket.emit('sup_msg', i);

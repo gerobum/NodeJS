@@ -17,15 +17,40 @@
             .cliquable {
                 cursor: pointer;
             }
+            .titre {
+                background-color: #008; 
+                color: antiquewhite; 
+                padding: 0 0 0 5px; 
+                margin: 0 0 0 0;
+                line-height:1em;
+                border-style: hidden;
+                font-family: "Comic Sans MS", "Comic Sans",  "Bradley Hand", cursive, fantasy, Georgia, "DejaVu Serif", Norasi, serif;
+            }
+            .liste {
+                padding: 5px; 
+                margin: 0 0 0 0;
+                line-height:1em;
+                border-style: hidden;
+                font-family: "Comic Sans MS", "Comic Sans",  "Bradley Hand",  Georgia, "DejaVu Serif", Norasi, serif;
+            }
+
+            .pair {
+                background-color: #BAFFA8;
+                    color: #000;
+            }
+            .impair {
+                background-color: #FFFFD0;
+                    color: #000;
+            }
         </style>
     </head>
 
     <body>
-        <h1 style="background-color: #008; color: antiquewhite;">Bonjour Maman </h1>
-        <h2 style="background-color: #008; color: antiquewhite;">Nous sommes le <span id="div_date"></span></h2>
-        <h2 style="background-color: #008; color: antiquewhite;">Il est <span id="div_horloge"></span></h2>
-        <ul id="zone_msg">
-        </ul>
+        <h1 class="titre">Bonjour Maman</h1>        
+        <h2 class="titre">Nous sommes le <span id="div_date"></span></h2>
+        <h2 class="titre">Il est <span id="div_horloge"></span></h2>
+        <div id="zone_msg">
+        </div>
 
 
 
@@ -35,19 +60,20 @@
         <script>
             function one_msg(i, todo) {
                 //return '<li><span class="cliquable" onclick="up('+i+')"> (↑) </span><span class="cliquable" onclick="down('+i+')"> (↓) </span><span class="cliquable" onclick="sup('+i+')"> (✘) </span> ' + todo + '</li>';
-                var color;
+                var classe;
                 if (i % 2 === 0) {
-                    color = "#b5d592";
+                    classe = "pair";
                 } else {
-                    color = "#ffc520";
+                    classe = "impair";
                 }
-                return "<p style=\"background-color: " + color + ";\">" + todo + "</p>";
+                return "<p class=\"liste " + classe + "\"><span>    " + todo + "</span></p>";
+
 
             }
         </script>
         <script>
             function horloge() {
-                var mois = ["janvier", "février", "mars", "avril", "mai", "juin", 
+                var mois = ["janvier", "février", "mars", "avril", "mai", "juin",
                     "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
                 var hm = document.getElementById("div_horloge");
@@ -82,14 +108,6 @@
             document.title = "Bonjour Maman";
 
             socket.emit('new', '');
-            // Lorsqu'on envoie le formulaire, on transmet le message et 
-            // on l'affiche sur la page
-            $('#formulaire_ajout').submit(function () {
-                var message = $('#newtodo').val();
-                socket.emit('add_msg', message); // Transmet le message aux autres
-                $('#newtodo').val('').focus(); // Vide la zone de Chat et remet le focus dessus
-                return false; // Permet de bloquer l'envoi "classique" du formulaire
-            });
 
             // Demande de mise à jour
             socket.on('update', function (data) {
@@ -98,15 +116,6 @@
                     $('#zone_msg').append(one_msg(i, data.todolist[i]));
                 }
             });
-            function sup(i) {
-                socket.emit('sup_msg', i);
-            }
-            function up(i) {
-                socket.emit('up_msg', i);
-            }
-            function down(i) {
-                socket.emit('down_msg', i);
-            }
         </script>
     </body>
 </html>

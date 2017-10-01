@@ -84,12 +84,7 @@ io.sockets.on('connection', function (socket) {
             socket.broadcast.emit('update', {todolist: todolist});
         }
     });
-    
-
-    function bip() {
-        socket.broadcast.emit('update', {todolist: todolist});
-    }
-    setInterval(bip, 1000);
+   
 });
 
 server.listen(8080);
