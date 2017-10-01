@@ -14,6 +14,9 @@
                 background-color: wheat;
                 padding: 2px;
             }
+            .cliquable {
+                cursor: pointer;
+            }
         </style>
     </head>
  
@@ -32,7 +35,7 @@
         <script src="/socket.io/socket.io.js"></script>
         <script>
         function one_task(i, todo) {
-            return '<li><span onclick="up('+i+')"> (↑) </span><span onclick="down('+i+')"> (↓) </span><span onclick="sup('+i+')"> (✘) </span> ' + todo + '</li>';
+            return '<li><span class="cliquable" onclick="up('+i+')"> (↑) </span><span class="cliquable" onclick="down('+i+')"> (↓) </span><span class="cliquable" onclick="sup('+i+')"> (✘) </span> ' + todo + '</li>';
         }
         </script>
         <script>

@@ -23,7 +23,8 @@ app.use(session({secret: 'todotopsecret'}))
         })
         /* On affiche la todolist et le formulaire */
         .get('/todo', function (req, res) {
-            res.sendfile(__dirname + '/index.html');
+            res.sendFile(__dirname + '/index.html');
+            //res.sendFile('/index.html', {root: __dirname});
         })
 
         /* Supprime un élément de la todolist */
@@ -49,10 +50,11 @@ io.sockets.on('connection', function (socket, pseudo) {
         socket.pseudo = pseudo;
         socket.broadcast.emit('nouveau_client', pseudo);
         socket.emit('update', {todolist: todolist});
+        console.log(pseudo + " s'est connecté.");
     });
     // Une tâche a été ajoutée
     socket.on('add_task', function (pair) {
-        todolist.push("<strong>"+ent.encode(pair.message)+"</strong><em>   from [" + pair.pseudo + "]</em>");
+        todolist.push("<strong>" + ent.encode(pair.message) + "</strong><em>   from [" + pair.pseudo + "]</em>");
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});
     });

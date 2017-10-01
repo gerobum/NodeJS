@@ -1,0 +1,26 @@
+<body>
+    <div class="container">
+        <header>
+            <h1>Liste de tâches ({{incompleteCount}})</h1>
+            <label class="hide-completed">
+                <input type="checkbox" />
+                Cacher les tâches terminées
+            </label>
+
+            {{> loginButtons}}      
+
+            {{#if currentUser}}
+            <form class="new-task">
+                <input type="text" name="text" 
+                       placeholder="Tapez du texte ici pour enregistrer une nouvelle tâche" />
+            </form> 
+            {{/if}}
+        </header>
+
+        <ul>
+            {{#each tasks}}
+            {{> task}}
+            {{/each}}
+        </ul>
+    </div>
+</body>

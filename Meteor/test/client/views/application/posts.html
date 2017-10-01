@@ -1,0 +1,51 @@
+<template name='posts'>
+
+    <h1>Liste des posts</h1>
+    <ul>
+    
+    {{#each posts}}
+        <li>{{ > post}} </li>
+    {{/each}}
+   
+    </ul>
+
+</template> 
+
+
+<template name='post'>
+  <div class='post'>
+            {{#if hide}}
+                Ce post est caché
+            {{else}}
+                {{title}}, par {{{ setAuthor }}}
+            {{/if}}
+  </div>
+</template>
+
+<template name="home">
+    <h2>Accueil</h2>
+	<h3>Nouveau post</h3>
+	<form>
+		<label>Auteur</label><input type="text" name="auteur" /><br />
+		<label>Titre</label><input type="text" name="titre" /><br />
+		<label>Contenu</label><textarea name="contenu" ></textarea><br />
+		<button type="submit" >Envoyer</button>
+	</form>
+	<h3>Liste des posts</h3>
+	<ul>
+	{{#each posts}}
+		<li><b>{{ title }}</b>, par <em>{{ author }}</em></li>
+	{{/each}}
+	</ul>
+</template>
+
+<template name="register">
+  <form>
+      <legend>Inscription</legend>
+      <input type="text" name="username" placeholder="Nom d'utilisateur" /><br />
+      <input type="email" name="email" placeholder="email" /><br />
+      <input type="password" name="password" placeholder="password" /><br />
+      <input type="submit" />
+  </form>
+</template>
+
