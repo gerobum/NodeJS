@@ -16,8 +16,7 @@
             }
             .cliquable {
                 cursor: pointer;
-                background-color: #333;
-                color: #eee
+                color: #b81900
             }
             .titre {
                 background-color: #008; 
@@ -179,7 +178,7 @@
                     isRTL: false,
                     showMonthAfterYear: false,
                     yearSuffix: '',
-                    minDate: '-12M -0D',
+                    minDate: '-0M -0D',
                     maxDate: '+12M +0D',
                     numberOfMonths: 1,
                     showButtonPanel: true
@@ -258,15 +257,14 @@
             }
         </script>
         <script>
-            function one_msg(i, todo) {
-                //return '<li><span class="cliquable" onclick="up('+i+')"> (↑) </span><span class="cliquable" onclick="down('+i+')"> (↓) </span><span class="cliquable" onclick="sup('+i+')"> (✘) </span> ' + todo + '</li>';
-                var classe;
+            function one_msg(i, todo) {var classe;
                 if (i % 2 === 0) {
                     classe = "pair";
                 } else {
                     classe = "impair";
                 }
-                return "<p class=\"liste " + classe + "\"><span class=\"cliquable\" onclick=\"up(" + i + ")\"> (↑) </span><span class=\"cliquable\" onclick=\"down(" + i + ")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup(" + i + ")\"> (✘) </span><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";
+                //return "<p class=\"liste " + classe + "\"><span class=\"cliquable\" onclick=\"up(" + i + ")\"> (↑) </span><span class=\"cliquable\" onclick=\"down(" + i + ")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup(" + i + ")\"> (✘) </span><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";            
+                return "<p class=\"liste " + classe + "\"><button class=\"cliquable\" onclick=\"sup(" + i + ")\"> ✘ </button><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";
             }
         </script>
 

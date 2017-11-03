@@ -30,7 +30,7 @@ function readLperm() {
 function writeList() {
     fs.writeFile('lperm', JSON.stringify(todolist) + '\n', (err) => {
         if (err) {
-            console.log("Problème d'écriture dans le fichier lperm")
+            console.log("Problème d'écriture dans le fichier lperm");
         }
     });
 }
@@ -45,8 +45,11 @@ function nettoyageListe() {
     //
     // Par ailleurs, le résultat est une chaine avec des guillements. Il faut
     // enlever le premier, d'où le JSON.stringify(new Date()).substring(1)
-    todolist = todolist.filter(c => c.date === null || 
-            c.date.substring(0,10) === date.substring(0,10));
+    todolist = todolist
+            .filter(c => c.date === null || c.date.substring(0, 10) === date.substring(0, 10))
+            .sort(function (c1, c2) {
+                return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
+            });
 }
 
 readLperm();
@@ -95,9 +98,11 @@ io.sockets.on('connection', function (socket) {
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
-        //var vcm = new ChronoMessage(cm.date, cm.debut, cm.fin, cm.message);
-        //todolist.push(vcm);
-        todolist = liste;
+        var date = JSON.stringify(new Date()).substring(1);
+        todolist = liste.filter(c => c.date === null ||
+                    c.date.substring(0, 10) === date.substring(0, 10)).sort(function (c1, c2) {
+            return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
+        });
         writeList();
 
         socket.emit('update', {todolist: todolist});
@@ -110,29 +115,6 @@ io.sockets.on('connection', function (socket) {
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});
     });
-    // Décaler la tâche i vers le haut
-    socket.on('up_msg', function (i) {
-        if (i > 0) {
-            x = todolist[i - 1];
-            todolist[i - 1] = todolist[i];
-            todolist[i] = x;
-            writeList();
-            socket.emit('update', {todolist: todolist});
-            socket.broadcast.emit('update', {todolist: todolist});
-        }
-    });
-    // Décaler la tâche i vers le bas
-    socket.on('down_msg', function (i) {
-        if (i < todolist.length - 1) {
-            x = todolist[i + 1];
-            todolist[i + 1] = todolist[i];
-            todolist[i] = x;
-            writeList();
-            socket.emit('update', {todolist: todolist});
-            socket.broadcast.emit('update', {todolist: todolist});
-        }
-    });
-
 });
 
 server.listen(8080);
