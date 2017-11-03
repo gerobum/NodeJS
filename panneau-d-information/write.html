@@ -67,7 +67,7 @@
         <!--onclick="toggle('iddate', 'date')-->
         <p>
             <span class="hsep">Date: <input id="iddate" class="date" type="checkbox" /> <input disabled id="datepicker" type="text" class="date" autofocus/></span>
-            <span class="hsep">Début:  <input id="iddebut" type="checkbox" class="debut"/>
+            <span class="hsep">Ordre : <input id="iddebut" type="checkbox" class="debut"/>
                 <select disabled class="debut" id="hdebut" name="nom">
                     <option>00
                     <option>01
@@ -110,7 +110,7 @@
                 </select>
             </span>
 
-            <span class="hsep">Fin: <input id="idfin" type="checkbox" class ="fin"/>
+            <span class="hsep">Expiration : <input id="idfin" type="checkbox" class ="fin"/>
                 <select disabled id="hfin" class="fin" size="1">
                     <option>00
                     <option>01
@@ -303,12 +303,12 @@
         </script>
         <script>
             $(function () {
-                $("#datepicker").datepicker(/* $.datepicker.regional[ "fr" ]*/ );
+                $("#datepicker").datepicker();
             });
         </script>
         <script>
             var init = function () {
-                $('#datepicker').datepicker(/*$.datepicker.regional[ "fr" ]*/);
+                $('#datepicker').datepicker();
                 var date = new Date();
                 emptyingDate();
                 date.getHours();
