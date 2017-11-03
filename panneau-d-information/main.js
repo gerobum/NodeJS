@@ -8,9 +8,21 @@ var app = require('express')(),
         bodyParser = require('body-parser'),
         ChronoMessage = require('myownmodules/ChronoMessage').ChronoMessage,
         urlencodedParser = bodyParser.urlencoded({extended: false});
-
-
 var todolist = [];
+
+Set.prototype.append = function (s) {
+    for (let e of s) {
+        this.add(e);
+    }
+}
+
+Set.prototype.toArray = function () {
+    var r = [];
+    for (let e of this) {
+        r.push(e);
+    }
+    return r;
+}
 
 function readLperm() {
     fs.readFile('lperm', 'utf8', (err, data) => {
@@ -21,7 +33,7 @@ function readLperm() {
                 todolist = JSON.parse(data);
                 nettoyageListe();
             } catch (e) {
-                console.log("Erreur de chargement de la liste");
+                console.log("Erreur de chargement de la liste " + e);
             }
         }
     });
@@ -31,6 +43,32 @@ function writeList() {
     fs.writeFile('lperm', JSON.stringify(todolist) + '\n', (err) => {
         if (err) {
             console.log("Problème d'écriture dans le fichier lperm");
+        }
+    });
+}
+
+function writeFuturList(newlist) {
+    fs.readFile('lfutur', 'utf8', (err, data) => {
+        if (err) {
+            fs.writeFile('lfutur', JSON.stringify(newlist) + '\n', (err) => {
+                if (err) {
+                    console.log("Problème d'écriture dans le fichier lfutur");
+                }
+            });
+        } else {
+            try {
+                futurlist = JSON.parse(data);
+                let s = new Set(futurlist);
+                s.append(newlist);
+
+                fs.writeFile('lfutur', JSON.stringify(s.toArray()) + '\n', (err) => {
+                    if (err) {
+                        console.log("Problème d'écriture dans le fichier lfutur");
+                    }
+                });
+            } catch (e) {
+                console.log("Erreur de chargement de la liste " + e);
+            }
         }
     });
 }
@@ -98,12 +136,15 @@ io.sockets.on('connection', function (socket) {
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
+        console.log(liste);
         var date = JSON.stringify(new Date()).substring(1);
         todolist = liste.filter(c => c.date === null ||
                     c.date.substring(0, 10) === date.substring(0, 10)).sort(function (c1, c2) {
             return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
         });
         writeList();
+        writeFuturList(liste.filter(c => c.date !== null &&
+                    c.date.substring(0, 10) > date.substring(0, 10)));
 
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});

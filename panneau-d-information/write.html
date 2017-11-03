@@ -196,27 +196,6 @@
              * une classe en commun avec le checkbox (sauf le checkbox lui-même)
              * selon qu'il soit coché ou non.
              */
-            function emptyingDate(event) {
-                var cb = document.getElementById("iddate")
-                if (cb.checked) {
-                    var dateString = "";
-                    var newDate = new Date();
-                    // Get the month, day, and year.
-                    dateString += newDate.getDate() + "-";
-                    dateString += (newDate.getMonth() + 1) + "-";
-                    dateString += newDate.getFullYear();
-                    //document.getElementById("datepicker").value = date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear();
-                    document.getElementById("datepicker").value = dateString;
-                } else {
-                    document.getElementById("datepicker").value = "";
-                }
-            }
-            /*
-             * Action à associer à un chechbox.
-             * Rend "enabled" ou "disabled" tous les éléments qui ont
-             * une classe en commun avec le checkbox (sauf le checkbox lui-même)
-             * selon qu'il soit coché ou non.
-             */
             function toggle(event) {
                 var cb = event.target;
                 var ips = cb.classList;
@@ -245,10 +224,12 @@
                         date.setHours(23);
                         date.setMinutes(59);
                     }
+                    console.log(date);
                     var hrd = {h: document.getElementById("hdebut").value, m: document.getElementById("mdebut").value};
                     var hrf = {h: document.getElementById("hfin").value, m: document.getElementById("mfin").value};
                     var cm = {date: date, debut: hrd, fin: hrf, message: message};
 
+                    console.log(cm);
                     liste.push(cm);
                 }
                 socket.emit('change_list', liste); // Transmet la liste au serveur
@@ -305,10 +286,10 @@
             });
         </script>
         <script>
+            
             var init = function () {
                 $('#datepicker').datepicker();
-                var date = new Date();
-                emptyingDate();
+                var date = new Date();document.getElementById("datepicker").value = "";
                 date.getHours();
 
                 document.getElementById("hdebut").selectedIndex = date.getHours();
@@ -330,7 +311,7 @@
             var initHandlers = function () {
                 init();
 
-                document.getElementById("iddate").addEventListener("click", emptyingDate, false);
+                //document.getElementById("iddate").addEventListener("click", emptyingDate, false);
                 document.getElementById("iddate").addEventListener("click", toggle, false);
                 document.getElementById("iddebut").addEventListener("click", toggle, false);
                 document.getElementById("idfin").addEventListener("click", toggle, false);
