@@ -43,7 +43,16 @@
                 background-color: #FFFFD0;
                 color: #000;
             }
+            .hsep {
+                border-style: inset;
+                padding: 0.5%;
+            }
         </style>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="/resources/demos/style.css">
+        <link rel="stylesheet" href="include/ui-1.10.0/ui-lightness/jquery-ui-1.10.0.custom.min.css" type="text/css" />
+        <link rel="stylesheet" href="jquery.ui.timepicker.css?v=0.3.3" type="text/css" />
+
     </head>
 
     <body>
@@ -54,12 +63,200 @@
         <div class="titre" id="zone_msg">
         </div>
 
-        <form action="/todo/ajouter/" method="post" id="formulaire_ajout">
-            <input type="text" size="150" name="newtodo" id="newtodo" placeholder="Entrez un message" autofocus />
-        </form>
+        <!--<form action="/todo/ajouter/" method="post" id="formulaire_ajout">-->
+        <!--onclick="toggle('iddate', 'date')-->
+        <p>
+            <span class="hsep">Date: <input id="iddate" class="date" type="checkbox" /> <input disabled id="datepicker" type="text" class="date" autofocus/></span>
+            <span class="hsep">Début:  <input id="iddebut" type="checkbox" class="debut"/>
+                <select disabled class="debut" id="hdebut" name="nom">
+                    <option>00
+                    <option>01
+                    <option>02
+                    <option>03
+                    <option>04
+                    <option>05
+                    <option>06
+                    <option>07
+                    <option>08
+                    <option>09
+                    <option>10
+                    <option>11 
+                    <option>12
+                    <option>13
+                    <option>14
+                    <option>15
+                    <option>16
+                    <option>17
+                    <option>18
+                    <option>19
+                    <option>20
+                    <option>21 
+                    <option>22
+                    <option>23              
+                </select>: 
+                <select disabled class="debut" id="mdebut" name="nom" size="1">
+                    <option>00
+                    <option>05
+                    <option>10
+                    <option>15
+                    <option>20
+                    <option>25   
+                    <option>30
+                    <option>35
+                    <option>40
+                    <option>45
+                    <option>50
+                    <option>55             
+                </select>
+            </span>
 
-        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+            <span class="hsep">Fin: <input id="idfin" type="checkbox" class ="fin"/>
+                <select disabled id="hfin" class="fin" size="1">
+                    <option>00
+                    <option>01
+                    <option>02
+                    <option>03
+                    <option>04
+                    <option>05
+                    <option>06
+                    <option>07
+                    <option>08
+                    <option>09
+                    <option>10
+                    <option>11 
+                    <option>12
+                    <option>13
+                    <option>14
+                    <option>15
+                    <option>16
+                    <option>17
+                    <option>18
+                    <option>19
+                    <option>20
+                    <option>21 
+                    <option>22
+                    <option>23              
+                </select>: 
+                <select disabled id="mfin" class="fin">
+                    <option>00
+                    <option>05
+                    <option>10
+                    <option>15
+                    <option>20
+                    <option>25   
+                    <option>30
+                    <option>35
+                    <option>40
+                    <option>45
+                    <option>50
+                    <option>55             
+                </select>   
+            </span>
+        </p>
+        <textarea cols="80" rows="10" placeholder="Un message" name="newtodo" id="newtodo" ></textarea>
+        <button id="sendbutton">Envoyer le message</button>
+        <!--</form>-->
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+        <script>
+            jQuery(function ($) {
+                $.datepicker.regional['fr'] = {
+                    closeText: 'Fermer',
+                    prevText: '&#x3c;Préc',
+                    nextText: 'Suiv&#x3e;',
+                    currentText: 'Aujourd\'hui',
+                    monthNames: ['Janvier', 'Fevrier', 'Mars', 'Avril', 'Mai', 'Juin',
+                        'Juillet', 'Aout', 'Septembre', 'Octobre', 'Novembre', 'Decembre'],
+                    monthNamesShort: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun',
+                        'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    dayNames: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+                    dayNamesShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+                    dayNamesMin: ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'],
+                    weekHeader: 'Sm',
+                    dateFormat: 'dd-mm-yy',
+                    firstDay: 1,
+                    isRTL: false,
+                    showMonthAfterYear: false,
+                    yearSuffix: '',
+                    minDate: '-12M -0D',
+                    maxDate: '+12M +0D',
+                    numberOfMonths: 1,
+                    showButtonPanel: true
+                };
+                $.datepicker.setDefaults($.datepicker.regional['fr']);
+            });
+        </script>
+
         <script src="/socket.io/socket.io.js"></script>
+
+        <script>
+            /*
+             * Action à associer à un chechbox.
+             * Rend "enabled" ou "disabled" tous les éléments qui ont
+             * une classe en commun avec le checkbox (sauf le checkbox lui-même)
+             * selon qu'il soit coché ou non.
+             */
+            function emptyingDate(event) {
+                var cb = document.getElementById("iddate")
+                if (cb.checked) {
+                    var dateString = "";
+                    var newDate = new Date();
+                    // Get the month, day, and year.
+                    dateString += newDate.getDate() + "-";
+                    dateString += (newDate.getMonth() + 1) + "-";
+                    dateString += newDate.getFullYear();
+                    //document.getElementById("datepicker").value = date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear();
+                    document.getElementById("datepicker").value = dateString;
+                } else {
+                    document.getElementById("datepicker").value = "";
+                }
+            }
+            /*
+             * Action à associer à un chechbox.
+             * Rend "enabled" ou "disabled" tous les éléments qui ont
+             * une classe en commun avec le checkbox (sauf le checkbox lui-même)
+             * selon qu'il soit coché ou non.
+             */
+            function toggle(event) {
+                var cb = event.target;
+                var ips = cb.classList;
+                for (var e of document.getElementsByClassName(ips)) {
+                    e.disabled = !cb.checked;
+                }
+                cb.disabled = false;
+            }
+            /*
+             * Action à associer à un chechbox.
+             * Rend "enabled" ou "disabled" tous les éléments qui ont
+             * une classe en commun avec le checkbox (sauf le checkbox lui-même)
+             * selon qu'il soit coché ou non.
+             */
+            function send(event) {
+                var message = document.getElementById("newtodo").value.trim();
+                var liste = [];
+                for (var e of document.getElementsByClassName("message")) {
+                    liste.push(JSON.parse(e.value))
+                }
+
+                if (message !== "") {
+                    //var date = new Date(document.getElementById("datepicker").value);
+                    var date = $("#datepicker").datepicker("getDate");
+                    if (date !== null) {
+                        date.setHours(23);
+                        date.setMinutes(59);
+                    }
+                    var hrd = {h: document.getElementById("hdebut").value, m: document.getElementById("mdebut").value};
+                    var hrf = {h: document.getElementById("hfin").value, m: document.getElementById("mfin").value};
+                    var cm = {date: date, debut: hrd, fin: hrf, message: message};
+
+                    liste.push(cm);
+                }
+                socket.emit('change_list', liste); // Transmet la liste au serveur
+                init();
+                return false;
+            }
+        </script>
         <script>
             function one_msg(i, todo) {
                 //return '<li><span class="cliquable" onclick="up('+i+')"> (↑) </span><span class="cliquable" onclick="down('+i+')"> (↓) </span><span class="cliquable" onclick="sup('+i+')"> (✘) </span> ' + todo + '</li>';
@@ -69,15 +266,14 @@
                 } else {
                     classe = "impair";
                 }
-                return "<p class=\"liste "+ classe + "\"><span class=\"cliquable\" onclick=\"up("+i+")\"> (↑) </span><span class=\"cliquable\" onclick=\"down("+i+")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup("+i+")\"> (✘) </span><span>    " + todo + "</span></p>";
-
+                return "<p class=\"liste " + classe + "\"><span class=\"cliquable\" onclick=\"up(" + i + ")\"> (↑) </span><span class=\"cliquable\" onclick=\"down(" + i + ")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup(" + i + ")\"> (✘) </span><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";
             }
         </script>
-        
-        
+
+
         <script>
             function horloge(doc) {
-                var mois = ["janvier", "février", "mars", "avril", "mai", "juin", 
+                var mois = ["janvier", "février", "mars", "avril", "mai", "juin",
                     "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
                 var hm = doc.getElementById("div_horloge");
@@ -101,9 +297,59 @@
         </script>
         <script>
             //window.onload = function () {
-                horloge(document);
-                setInterval(horloge, 1000, document);
+            horloge(document);
+            setInterval(horloge, 1000, document);
             //};
+        </script>
+        <script>
+            $(function () {
+                $("#datepicker").datepicker(/* $.datepicker.regional[ "fr" ]*/ );
+            });
+        </script>
+        <script>
+            var init = function () {
+                $('#datepicker').datepicker(/*$.datepicker.regional[ "fr" ]*/);
+                var date = new Date();
+                emptyingDate();
+                date.getHours();
+
+                document.getElementById("hdebut").selectedIndex = date.getHours();
+                document.getElementById("mdebut").selectedIndex = 0;
+                document.getElementById("hfin").selectedIndex = 23;
+                document.getElementById("mfin").selectedIndex = 11;
+                document.getElementById('newtodo').value = "";
+
+                document.getElementById('iddate').checked = false;
+                document.getElementById('iddebut').checked = false;
+                document.getElementById('idfin').checked = false;
+                document.getElementById('datepicker').disabled = true;
+                document.getElementById('hdebut').disabled = true;
+                document.getElementById('mdebut').disabled = true;
+                document.getElementById('hfin').disabled = true;
+                document.getElementById('mfin').disabled = true;
+
+            };
+            var initHandlers = function () {
+                init();
+
+                document.getElementById("iddate").addEventListener("click", emptyingDate, false);
+                document.getElementById("iddate").addEventListener("click", toggle, false);
+                document.getElementById("iddebut").addEventListener("click", toggle, false);
+                document.getElementById("idfin").addEventListener("click", toggle, false);
+
+                document.getElementById("sendbutton").addEventListener("click", send, false);
+            };
+            //détache le gestionnaire de <body>
+            var unloadHandlers = function () {
+                //document.body.removeEventListener("click", onclickCounter, false);
+                document.getElementById("iddate").removeEventListener("click", toggle, false);
+                document.getElementById("iddebut").removeEventListener("click", toggle, false);
+                document.getElementById("idfin").removeEventListener("click", toggle, false);
+            };
+            //chargement de la page
+            window.addEventListener("load", initHandlers, false);
+            //déchargement de la page
+            window.addEventListener("unload", unloadHandlers, false);
         </script>
         <script>
             // Connexion à socket.io
@@ -112,24 +358,13 @@
             document.title = "Bonjour Maman";
 
             socket.emit('new', '');
-            // Lorsqu'on envoie le formulaire, on transmet le message et 
-            // on l'affiche sur la page
-            $('#formulaire_ajout').submit(function () {
-                var message = $('#newtodo').val();
-                socket.emit('add_msg', message); // Transmet le message aux autres
-                $('#newtodo').val('').focus(); // Vide la zone de Chat et remet le focus dessus
-                return false; // Permet de bloquer l'envoi "classique" du formulaire
-            });
 
             // Demande de mise à jour
             socket.on('update', function (data) {
                 $('#zone_msg').empty();
-                    console.log(" debut update ");
                 for (var i in data.todolist) {
-                    console.log("update " + i);
-                    $('#zone_msg').append(one_msg(i, data.todolist[i]));
+                    $('#zone_msg').append(one_msg(i, JSON.stringify(data.todolist[i])));
                 }
-                    console.log(" fin update ");
             });
             function sup(i) {
                 socket.emit('sup_msg', i);

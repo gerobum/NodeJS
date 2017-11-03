@@ -3,16 +3,57 @@ var app = require('express')(),
         io = require('socket.io').listen(server),
         ent = require('ent'), // Permet de bloquer les caractères HTML (sécurité équivalente à htmlentities en PHP)
         fs = require('fs'),
+        mongoclient = require('mongodb').MongoClient,
         session = require('cookie-session'),
         bodyParser = require('body-parser'),
+        ChronoMessage = require('myownmodules/ChronoMessage').ChronoMessage,
         urlencodedParser = bodyParser.urlencoded({extended: false});
+
 
 var todolist = [];
 
+function readLperm() {
+    fs.readFile('lperm', 'utf8', (err, data) => {
+        if (err) {
+            console.log("Erreur de lecture du fichier lperm");
+        } else {
+            try {
+                todolist = JSON.parse(data);
+                nettoyageListe();
+            } catch (e) {
+                console.log("Erreur de chargement de la liste");
+            }
+        }
+    });
+}
+
+function writeList() {
+    fs.writeFile('lperm', JSON.stringify(todolist) + '\n', (err) => {
+        if (err) {
+            console.log("Problème d'écriture dans le fichier lperm")
+        }
+    });
+}
+
+function nettoyageListe() {
+    var date = JSON.stringify(new Date()).substring(1);
+    // Attention STRINGIFY gère mal les dates. C'est tout ce que j'ai trouvé,
+    // pour l'instant, pour filtrer les dates qui correspondent à aujourd'hui.
+    // Comme une date stringifyée s'écrit comme ça : 2017-11-04T22:59:00.000Z
+    // afin de comparer la date seule (sans l'heure) je prends la sous-chaîne
+    // composée des 10 premières lettres.
+    //
+    // Par ailleurs, le résultat est une chaine avec des guillements. Il faut
+    // enlever le premier, d'où le JSON.stringify(new Date()).substring(1)
+    todolist = todolist.filter(c => c.date === null || 
+            c.date.substring(0,10) === date.substring(0,10));
+}
+
+readLperm();
 
 // Chargement de la page index.html
 app.use(session({secret: 'todotopsecret'}))
-   
+
         /* S'il n'y a pas de todolist dans la session,
          on en crée une vide sous forme d'array avant la suite */
         .use(function (req, res, next) {
@@ -53,14 +94,19 @@ io.sockets.on('connection', function (socket) {
         socket.emit('update', {todolist: todolist});
     });
     // Une tâche a été ajoutée
-    socket.on('add_msg', function (message) {
-        todolist.push("<strong>" + ent.encode(message) + "</strong>");
+    socket.on('change_list', function (liste) {
+        //var vcm = new ChronoMessage(cm.date, cm.debut, cm.fin, cm.message);
+        //todolist.push(vcm);
+        todolist = liste;
+        writeList();
+
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});
     });
     // Supprimer la tâche i
     socket.on('sup_msg', function (i) {
         todolist.splice(i, 1);
+        writeList();
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});
     });
@@ -70,6 +116,7 @@ io.sockets.on('connection', function (socket) {
             x = todolist[i - 1];
             todolist[i - 1] = todolist[i];
             todolist[i] = x;
+            writeList();
             socket.emit('update', {todolist: todolist});
             socket.broadcast.emit('update', {todolist: todolist});
         }
@@ -80,11 +127,12 @@ io.sockets.on('connection', function (socket) {
             x = todolist[i + 1];
             todolist[i + 1] = todolist[i];
             todolist[i] = x;
+            writeList();
             socket.emit('update', {todolist: todolist});
             socket.broadcast.emit('update', {todolist: todolist});
         }
     });
-   
+
 });
 
 server.listen(8080);

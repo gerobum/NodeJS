@@ -10,6 +10,7 @@
         "cookie-session": "~1.1.0",
         "body-parser": "~1.10.1",
         "socket.io": "~1.2.1",
-        "ent": "~0.1.0"
+        "ent": "~0.1.0",
+        "mongodb": "~2.2.19"
     }
 }

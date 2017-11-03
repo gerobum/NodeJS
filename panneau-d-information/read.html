@@ -113,7 +113,7 @@
             socket.on('update', function (data) {
                 $('#zone_msg').empty();
                 for (var i in data.todolist) {
-                    $('#zone_msg').append(one_msg(i, data.todolist[i]));
+                    $('#zone_msg').append(one_msg(i, data.todolist[i].message));
                 }
             });
         </script>
