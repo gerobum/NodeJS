@@ -3,11 +3,67 @@ var app = require('express')(),
         io = require('socket.io').listen(server),
         ent = require('ent'), // Permet de bloquer les caractères HTML (sécurité équivalente à htmlentities en PHP)
         fs = require('fs'),
-        mongoclient = require('mongodb').MongoClient,
         session = require('cookie-session'),
         bodyParser = require('body-parser'),
         ChronoMessage = require('myownmodules/ChronoMessage').ChronoMessage,
+        Horaire = require('myownmodules/ChronoMessage').Horaire,
         urlencodedParser = bodyParser.urlencoded({extended: false});
+function newDayPurge() {
+    console.log("Purge");
+    var liste = [];
+    fs.readFile('lperm', 'utf8', (err, data) => {
+        if (err) {
+            console.log("Erreur de lecture du fichier lperm lors de la purge");
+        } else {
+            try {
+                liste = JSON.parse(data);
+                fs.readFile('lfutur', 'utf8', (err, data) => {
+                    if (err) {
+                        console.log("Erreur de lecture du fichier lfutur lors de la purge");
+                    } else {
+                        try {
+                            var s = new Set(JSON.parse(data));
+                            var date = JSON.stringify(new Date()).substring(1);
+                            s.append(liste);
+                            liste = s.toArray();
+                            writeList('lperm', liste.filter(c => c.date === null ||
+                                        c.date.substring(0, 10) === date.substring(0, 10))
+                                    .sort(function (c1, c2) {
+                                        return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
+                                    }));
+
+                            writeList('lfutur', liste.filter(c => c.date !== null &&
+                                        c.date.substring(0, 10) > date.substring(0, 10)));
+                        } catch (e) {
+                            console.log("Erreur de chargement de la liste " + e);
+                        }
+                    }
+                });
+            } catch (e) {
+                console.log("Erreur de chargement de la liste " + e);
+            }
+        }
+    });
+}
+
+function schedule(hnext, afunction) {
+    var now = new Date();
+    var hnow = new Horaire(now.getHours(), now.getMinutes());
+    var timeout;
+    if (hnow < hnext) {
+        timeout = (hnext - hnow) * 60 * 1000;
+    } else {
+        timeout = (24 * 60 + (hnext - hnow)) * 1000 * 60;
+    }
+    setTimeout(() => {
+        afunction();
+        schedule(hnext, afunction);
+    }, timeout);
+}
+
+// Lancement de la purge tous les jours à 5h05.
+schedule(new Horaire(5,5), newDayPurge);
+
 var todolist = [];
 
 Set.prototype.append = function (s) {
@@ -39,8 +95,8 @@ function readLperm() {
     });
 }
 
-function writeList() {
-    fs.writeFile('lperm', JSON.stringify(todolist) + '\n', (err) => {
+function writeList(file = 'lperm', list = todolist) {
+    fs.writeFile(file, JSON.stringify(list) + '\n', (err) => {
         if (err) {
             console.log("Problème d'écriture dans le fichier lperm");
         }
@@ -136,7 +192,6 @@ io.sockets.on('connection', function (socket) {
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
-        console.log(liste);
         var date = JSON.stringify(new Date()).substring(1);
         todolist = liste.filter(c => c.date === null ||
                     c.date.substring(0, 10) === date.substring(0, 10)).sort(function (c1, c2) {
