@@ -236,7 +236,7 @@
 
                     var hrd = {h: document.getElementById("hdebut").value, m: document.getElementById("mdebut").value};
                     var hrf = {h: document.getElementById("hfin").value, m: document.getElementById("mfin").value};
-                    var cm = {date: date, debut: hrd, fin: hrf, message: message};
+                    var cm = {date: date, jour: document.getElementById("idjour").value, debut: hrd, fin: hrf, message: message};
 
                     liste.push(cm);
                 }
@@ -358,8 +358,8 @@
         </script>
         <script>
             // Connexion à socket.io
-            var socket = io.connect('http://192.168.1.56:8080');
-            //var socket = io.connect('http://localhost:8080');
+            //var socket = io.connect('http://192.168.1.56:8080');
+            var socket = io.connect('http://localhost:8080');
 
             document.title = "Bonjour Maman";
 

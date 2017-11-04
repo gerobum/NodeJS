@@ -9,7 +9,6 @@ var app = require('express')(),
         Horaire = require('myownmodules/ChronoMessage').Horaire,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 function newDayPurge() {
-    console.log("Purge");
     var liste = [];
     fs.readFile('lperm', 'utf8', (err, data) => {
         if (err) {
@@ -62,7 +61,7 @@ function schedule(hnext, afunction) {
 }
 
 // Lancement de la purge tous les jours à 5h05.
-schedule(new Horaire(5,5), newDayPurge);
+schedule(new Horaire(5, 5), newDayPurge);
 
 var todolist = [];
 
@@ -131,6 +130,9 @@ function writeFuturList(newlist) {
 
 function nettoyageListe() {
     var date = JSON.stringify(new Date()).substring(1);
+    var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+    var jour = tjour[new Date().getDay()];
+
     // Attention STRINGIFY gère mal les dates. C'est tout ce que j'ai trouvé,
     // pour l'instant, pour filtrer les dates qui correspondent à aujourd'hui.
     // Comme une date stringifyée s'écrit comme ça : 2017-11-04T22:59:00.000Z
@@ -140,7 +142,9 @@ function nettoyageListe() {
     // Par ailleurs, le résultat est une chaine avec des guillements. Il faut
     // enlever le premier, d'où le JSON.stringify(new Date()).substring(1)
     todolist = todolist
-            .filter(c => c.date === null || c.date.substring(0, 10) === date.substring(0, 10))
+            .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
+                        (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
+                        (c.date !== null && c.date.substring(0, 10) === date.substring(0, 10))))
             .sort(function (c1, c2) {
                 return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
             });
@@ -192,14 +196,23 @@ io.sockets.on('connection', function (socket) {
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
+        var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+        var jour = tjour[new Date().getDay()];
         var date = JSON.stringify(new Date()).substring(1);
-        todolist = liste.filter(c => c.date === null ||
-                    c.date.substring(0, 10) === date.substring(0, 10)).sort(function (c1, c2) {
-            return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
-        });
+        todolist = liste
+                .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
+                             (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
+                             (c.date !== null && c.date.substring(0, 10) === date.substring(0, 10))))
+                .sort(function (c1, c2) {
+                    return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
+                })
+                ;
+
         writeList();
-        writeFuturList(liste.filter(c => c.date !== null &&
-                    c.date.substring(0, 10) > date.substring(0, 10)));
+        writeFuturList(liste.filter(c => 
+                  (c.date !== null && c.date.substring(0, 10) > date.substring(0, 10)) ||
+                   c.date === null  
+                ));
 
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});
