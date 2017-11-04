@@ -244,7 +244,8 @@
                 init();
                 return false;
             }
-            function one_msg(i, todo) {var classe;
+            function one_msg(i, todo) {
+                var classe;
                 if (i % 2 === 0) {
                     classe = "pair";
                 } else {
@@ -258,7 +259,7 @@
                 var cbdate = document.getElementById("iddate");
                 var jourchoice = document.getElementById("idjour");
                 var datechoice = document.getElementById("datepicker");
-                
+
                 if (cbjour === event.target) {
                     if (cbjour.checked) {
                         cbdate.checked = false;
@@ -270,6 +271,12 @@
                         cbjour.checked = false;
                         jourchoice.selectedIndex = 0;
                         jourchoice.disabled = true;
+                    }
+                    if (cbdate.checked) {
+                        let date = new Date();
+                        datechoice.value = date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear();
+                    } else {
+                        datechoice.value = null;
                     }
                 }
             }
@@ -312,10 +319,12 @@
             });
         </script>
         <script>
-            
+
             var init = function () {
                 $('#datepicker').datepicker();
-                var date = new Date();document.getElementById("datepicker").value = "";
+                var date = new Date();
+
+                document.getElementById("datepicker").value = date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear();
 
                 document.getElementById("hdebut").selectedIndex = date.getHours();
                 document.getElementById("mdebut").selectedIndex = 0;
@@ -323,10 +332,10 @@
                 document.getElementById("mfin").selectedIndex = 11;
                 document.getElementById('newtodo').value = "";
 
-                document.getElementById('iddate').checked = false;
+                document.getElementById('iddate').checked = true;
                 document.getElementById('iddebut').checked = false;
                 document.getElementById('idfin').checked = false;
-                document.getElementById('datepicker').disabled = true;
+                document.getElementById('datepicker').disabled = false;
                 document.getElementById('hdebut').disabled = true;
                 document.getElementById('mdebut').disabled = true;
                 document.getElementById('hfin').disabled = true;
@@ -340,7 +349,7 @@
                 document.getElementById("iddebut").addEventListener("click", toggle, false);
                 document.getElementById("idfin").addEventListener("click", toggle, false);
                 document.getElementById("idcbjour").addEventListener("click", toggle, false);
-                
+
                 document.getElementById("iddate").addEventListener("click", mutex, false);
                 document.getElementById("idcbjour").addEventListener("click", mutex, false);
 
