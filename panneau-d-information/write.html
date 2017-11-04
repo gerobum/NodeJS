@@ -244,8 +244,6 @@
                 init();
                 return false;
             }
-        </script>
-        <script>
             function one_msg(i, todo) {var classe;
                 if (i % 2 === 0) {
                     classe = "pair";
@@ -254,6 +252,26 @@
                 }
                 //return "<p class=\"liste " + classe + "\"><span class=\"cliquable\" onclick=\"up(" + i + ")\"> (↑) </span><span class=\"cliquable\" onclick=\"down(" + i + ")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup(" + i + ")\"> (✘) </span><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";            
                 return "<p class=\"liste " + classe + "\"><button class=\"cliquable\" onclick=\"sup(" + i + ")\"> ✘ </button><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";
+            }
+            function mutex(event) {
+                var cbjour = document.getElementById("idcbjour");
+                var cbdate = document.getElementById("iddate");
+                var jourchoice = document.getElementById("idjour");
+                var datechoice = document.getElementById("datepicker");
+                
+                if (cbjour === event.target) {
+                    if (cbjour.checked) {
+                        cbdate.checked = false;
+                        datechoice.value = null;
+                        datechoice.disabled = true;
+                    }
+                } else if (cbdate === event.target) {
+                    if (cbjour.checked) {
+                        cbjour.checked = false;
+                        jourchoice.selectedIndex = 0;
+                        jourchoice.disabled = true;
+                    }
+                }
             }
         </script>
 
@@ -298,7 +316,6 @@
             var init = function () {
                 $('#datepicker').datepicker();
                 var date = new Date();document.getElementById("datepicker").value = "";
-                date.getHours();
 
                 document.getElementById("hdebut").selectedIndex = date.getHours();
                 document.getElementById("mdebut").selectedIndex = 0;
@@ -323,12 +340,13 @@
                 document.getElementById("iddebut").addEventListener("click", toggle, false);
                 document.getElementById("idfin").addEventListener("click", toggle, false);
                 document.getElementById("idcbjour").addEventListener("click", toggle, false);
+                
+                document.getElementById("iddate").addEventListener("click", mutex, false);
+                document.getElementById("idcbjour").addEventListener("click", mutex, false);
 
                 document.getElementById("sendbutton").addEventListener("click", send, false);
             };
-            //détache le gestionnaire de <body>
             var unloadHandlers = function () {
-                //document.body.removeEventListener("click", onclickCounter, false);
                 document.getElementById("iddate").removeEventListener("click", toggle, false);
                 document.getElementById("iddebut").removeEventListener("click", toggle, false);
                 document.getElementById("idfin").removeEventListener("click", toggle, false);
@@ -341,6 +359,7 @@
         <script>
             // Connexion à socket.io
             var socket = io.connect('http://192.168.1.56:8080');
+            //var socket = io.connect('http://localhost:8080');
 
             document.title = "Bonjour Maman";
 
