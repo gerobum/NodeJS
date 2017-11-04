@@ -62,10 +62,20 @@
         <div class="titre" id="zone_msg">
         </div>
 
-        <!--<form action="/todo/ajouter/" method="post" id="formulaire_ajout">-->
-        <!--onclick="toggle('iddate', 'date')-->
         <p>
             <span class="hsep">Date: <input id="iddate" class="date" type="checkbox" /> <input disabled id="datepicker" type="text" class="date" autofocus/></span>
+            <span class="hsep">Jour : <input id="idcbjour" type="checkbox" class="jour"/>
+                <select disabled class="jour" id="idjour">
+                    <option selected>Tous les jours</option>
+                    <option>Lundi</option>
+                    <option>Mardi</option>
+                    <option>Mercredi</option>
+                    <option>Jeudi</option>
+                    <option>Vendredi</option>
+                    <option>Samedi</option>
+                    <option>Dimanche</option>
+                </select>
+            </span>
             <span class="hsep">Ordre : <input id="iddebut" type="checkbox" class="debut"/>
                 <select disabled class="debut" id="hdebut" name="nom">
                     <option>00
@@ -154,7 +164,7 @@
         </p>
         <textarea cols="80" rows="10" placeholder="Un message" name="newtodo" id="newtodo" ></textarea>
         <button id="sendbutton">Envoyer le message</button>
-        <!--</form>-->
+
         <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
@@ -218,18 +228,16 @@
                 }
 
                 if (message !== "") {
-                    //var date = new Date(document.getElementById("datepicker").value);
                     var date = $("#datepicker").datepicker("getDate");
                     if (date !== null) {
                         date.setHours(23);
                         date.setMinutes(59);
                     }
-                    console.log(date);
+
                     var hrd = {h: document.getElementById("hdebut").value, m: document.getElementById("mdebut").value};
                     var hrf = {h: document.getElementById("hfin").value, m: document.getElementById("mfin").value};
                     var cm = {date: date, debut: hrd, fin: hrf, message: message};
 
-                    console.log(cm);
                     liste.push(cm);
                 }
                 socket.emit('change_list', liste); // Transmet la liste au serveur
@@ -311,10 +319,10 @@
             var initHandlers = function () {
                 init();
 
-                //document.getElementById("iddate").addEventListener("click", emptyingDate, false);
                 document.getElementById("iddate").addEventListener("click", toggle, false);
                 document.getElementById("iddebut").addEventListener("click", toggle, false);
                 document.getElementById("idfin").addEventListener("click", toggle, false);
+                document.getElementById("idcbjour").addEventListener("click", toggle, false);
 
                 document.getElementById("sendbutton").addEventListener("click", send, false);
             };
