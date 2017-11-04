@@ -1,5 +1,6 @@
 processPM2/
-**/node_modules/
+**/node_modules/*
+!**/node_modules/myownmodules
 *.kate-swp
 /todolist/nbproject/private/
 /NodeJsServerIOSocket/nbproject/private/
