@@ -1,6 +1,6 @@
 {
   "watch": true,
-  "ignore_watch" : ["node_modules", "nbproject", "package.json"],
+  "ignore_watch" : ["node_modules", "nbproject", "package.json", "lperm", "lfutur"],
   "watch_options": {
     "followSymlinks": false
   }
