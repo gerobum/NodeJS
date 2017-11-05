@@ -1,13 +1,17 @@
-var app = require('express')(),
-        server = require('http').createServer(app),
+var express = require('express');
+var app = express();
+var server = require('http').createServer(app),
         io = require('socket.io').listen(server),
         ent = require('ent'), // Permet de bloquer les caractères HTML (sécurité équivalente à htmlentities en PHP)
         fs = require('fs'),
         session = require('cookie-session'),
         bodyParser = require('body-parser'),
-        ChronoMessage = require('myownmodules/ChronoMessage').ChronoMessage,
-        Horaire = require('myownmodules/ChronoMessage').Horaire,
+        ChronoMessage = require('./js/ChronoMessage').ChronoMessage,
+        Horaire = require('./js/ChronoMessage').Horaire,
         urlencodedParser = bodyParser.urlencoded({extended: false});
+
+
+
 function newDayPurge() {
     var liste = [];
     fs.readFile('lperm', 'utf8', (err, data) => {
@@ -183,6 +187,8 @@ app.use(session({secret: 'todotopsecret'}))
             }
             res.redirect('/write');
         })
+        // Pour pouvoir importer des modules dans les clients.        
+        .use('/js', express.static('js'))
 
         /* On redirige vers la todolist si la page demandée n'est pas trouvée */
         .use(function (req, res, next) {
@@ -201,18 +207,18 @@ io.sockets.on('connection', function (socket) {
         var date = JSON.stringify(new Date()).substring(1);
         todolist = liste
                 .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
-                             (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
-                             (c.date !== null && c.date.substring(0, 10) === date.substring(0, 10))))
+                            (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
+                            (c.date !== null && c.date.substring(0, 10) === date.substring(0, 10))))
                 .sort(function (c1, c2) {
                     return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
                 })
                 ;
 
         writeList();
-        writeFuturList(liste.filter(c => 
-                  (c.date !== null && c.date.substring(0, 10) > date.substring(0, 10)) ||
-                   c.date === null  
-                ));
+        writeFuturList(liste.filter(c =>
+            (c.date !== null && c.date.substring(0, 10) > date.substring(0, 10)) ||
+                    c.date === null
+        ));
 
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});

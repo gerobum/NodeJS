@@ -27,7 +27,7 @@ Horaire.prototype.fromString = function (hmstr, def = '09h05') {
     this.m = parseInt(result[2]);
     if (isNaN(this.m)) {
         this.m = 0;
-    }
+}
 };
 
 /**
@@ -44,12 +44,16 @@ function ChronoMessage(date, jour, debut, fin, message) {
     this.debut = debut;
     this.fin = fin;
     this.message = message;
-};
+}
+;
 
 ChronoMessage.prototype.toString = function () {
     return this.message;
 };
 
-
-exports.Horaire = Horaire;
-exports.ChronoMessage = ChronoMessage;
+try {
+    exports.Horaire = Horaire;
+    exports.ChronoMessage = ChronoMessage;
+} catch (e) {
+    console.log(e);
+}

@@ -197,7 +197,6 @@
             });
         </script>
 
-        <script src="/socket.io/socket.io.js"></script>
 
         <script>
             /*
@@ -367,10 +366,16 @@
             //déchargement de la page
             window.addEventListener("unload", unloadHandlers, false);
         </script>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="./js/ChronoMessage.js"></script>
+        <script src="./js/hostname.js"></script>
+
         <script>
             // Connexion à socket.io
-            var socket = io.connect('http://192.168.1.56:8080');
-            //var socket = io.connect('http://localhost:8080');
+            //var socket = io.connect('http://192.168.1.56:8080');
+            var socket = io.connect('http://'+hostname+':8080');
+            //var socket = io.connect('http://hostname:8080');
 
             document.title = "Bonjour Maman";
 
