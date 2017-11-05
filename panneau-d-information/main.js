@@ -10,8 +10,6 @@ var server = require('http').createServer(app),
         Horaire = require('./js/ChronoMessage').Horaire,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
-
-
 function newDayPurge() {
     var liste = [];
     fs.readFile('lperm', 'utf8', (err, data) => {
@@ -64,16 +62,11 @@ function schedule(hnext, afunction) {
     }, timeout);
 }
 
-// Lancement de la purge tous les jours à 5h05.
-schedule(new Horaire(5, 5), newDayPurge);
-
-var todolist = [];
-
 Set.prototype.append = function (s) {
     for (let e of s) {
         this.add(e);
     }
-}
+};
 
 Set.prototype.toArray = function () {
     var r = [];
@@ -81,7 +74,7 @@ Set.prototype.toArray = function () {
         r.push(e);
     }
     return r;
-}
+};
 
 function readLperm() {
     fs.readFile('lperm', 'utf8', (err, data) => {
@@ -132,8 +125,19 @@ function writeFuturList(newlist) {
     });
 }
 
-function nettoyageListe() {
-    var date = JSON.stringify(new Date()).substring(1);
+Array.prototype.isEqual = function(b) {
+    if (this.length !== b.length)
+        return false;
+    for(let i in this) {
+        if (this[i] !== b[i]) 
+            return false;
+    }
+    return true;
+};
+
+function nettoyageListe(socket = null) {
+    var date = new Date();
+    var jsondate = JSON.stringify(date).substring(1);
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     var jour = tjour[new Date().getDay()];
 
@@ -145,16 +149,32 @@ function nettoyageListe() {
     //
     // Par ailleurs, le résultat est une chaine avec des guillements. Il faut
     // enlever le premier, d'où le JSON.stringify(new Date()).substring(1)
-    todolist = todolist
+    newtodolist = todolist
+            .filter(c => {
+                try {
+                    return c.fin.h > date.getHours() ||
+                            (c.fin.h === date.getHours() && c.fin.m > date.getMinutes());
+                } catch (e) {
+                    return true;
+                }
+            })
             .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                         (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
-                        (c.date !== null && c.date.substring(0, 10) === date.substring(0, 10))))
+                        (c.date !== null && c.date.substring(0, 10) === jsondate.substring(0, 10))))
             .sort(function (c1, c2) {
                 return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
             });
+
+    if (socket !== null && !todolist.isEqual(newtodolist)) {
+        todolist = newtodolist;
+        newtodolist = null;
+        socket.broadcast.emit('update', {todolist: todolist});
+        socket.emit('update', {todolist: todolist});
+        writeList();
+    }
 }
 
-readLperm();
+
 
 // Chargement de la page index.html
 app.use(session({secret: 'todotopsecret'}))
@@ -195,7 +215,18 @@ app.use(session({secret: 'todotopsecret'}))
             res.redirect('/read');
         });
 
+
+var todolist = [];
+
 io.sockets.on('connection', function (socket) {
+
+
+// Lancement de la purge tous les jours à 5h05.
+    schedule(new Horaire(5, 5), newDayPurge);
+    setInterval(nettoyageListe, 60000, socket);
+
+    readLperm();
+
     socket.on('new', function (message) {
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
