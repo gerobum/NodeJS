@@ -274,7 +274,7 @@
                     }
                     if (cbdate.checked) {
                         let date = new Date();
-                        datechoice.value = date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear();
+                        datechoice.value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
                     } else {
                         datechoice.value = null;
                     }
@@ -324,7 +324,7 @@
                 $('#datepicker').datepicker();
                 var date = new Date();
 
-                document.getElementById("datepicker").value = date.getDate()+"-"+(date.getMonth()+1)+"-"+date.getFullYear();
+                document.getElementById("datepicker").value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
 
                 document.getElementById("hdebut").selectedIndex = date.getHours();
                 document.getElementById("mdebut").selectedIndex = 0;
@@ -335,12 +335,14 @@
                 document.getElementById('iddate').checked = true;
                 document.getElementById('iddebut').checked = false;
                 document.getElementById('idfin').checked = false;
+                document.getElementById('idcbjour').checked = false;
                 document.getElementById('datepicker').disabled = false;
                 document.getElementById('hdebut').disabled = true;
                 document.getElementById('mdebut').disabled = true;
                 document.getElementById('hfin').disabled = true;
                 document.getElementById('mfin').disabled = true;
-
+                document.getElementById('idjour').disabled = true;
+                document.getElementById('idjour').selectedIndex = 0;
             };
             var initHandlers = function () {
                 init();
