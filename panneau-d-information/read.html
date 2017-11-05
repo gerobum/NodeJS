@@ -36,11 +36,11 @@
 
             .pair {
                 background-color: #BAFFA8;
-                    color: #000;
+                color: #000;
             }
             .impair {
                 background-color: #FFFFD0;
-                    color: #000;
+                color: #000;
             }
         </style>
     </head>
@@ -53,6 +53,11 @@
         </div>
 
 
+        <p>
+            <img src="images/image0.png" alt="image0" />
+            <img src="images/image1.png" alt="image1" />
+            <img src="images/image2.png" alt="image2" />
+        </p>
 
 
         <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
@@ -107,7 +112,7 @@
             // Connexion à socket.io
             //var socket = io.connect('http://192.168.1.56:8080');
             //var socket = io.connect('http://localhost:8080');
-            var socket = io.connect('http://'+hostname+':8080');
+            var socket = io.connect('http://' + hostname + ':8080');
 
             document.title = "Bonjour Maman";
 

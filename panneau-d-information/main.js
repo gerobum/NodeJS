@@ -209,6 +209,8 @@ app.use(session({secret: 'todotopsecret'}))
         })
         // Pour pouvoir importer des modules dans les clients.        
         .use('/js', express.static('js'))
+        // Pour pouvoir afficher des images.        
+        .use('/images', express.static('images'))
 
         /* On redirige vers la todolist si la page demandée n'est pas trouvée */
         .use(function (req, res, next) {
