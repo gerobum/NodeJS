@@ -197,6 +197,11 @@ app.use(session({secret: 'todotopsecret'}))
             res.sendFile(__dirname + '/write.html');
             //res.sendFile('/index.html', {root: __dirname});
         })
+        /* Edition du fichier lfutur */
+        .get('/edit', function (req, res) {
+            res.sendFile(__dirname + '/write.html');
+            //res.sendFile('/index.html', {root: __dirname});
+        })
 
         /* Supprime un élément de la todolist */
         .get('/write/supprimer/:id', function (req, res) {
