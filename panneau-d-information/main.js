@@ -46,20 +46,39 @@ function newDayPurge() {
         }
     });
 }
-
-function schedule(hnext, afunction) {
+/*
+ * Execute a function everyday at hnext if n == 0
+ *                   or n days at hnext if n > 0
+ * If rebour then
+ *     
+ * @param {type} hnext
+ * @param {type} afunction
+ * @param {type} n
+ * @returns {undefined}
+ */
+function schedule(hnext, afunction, n = null, retro = true, arg = null) {
     var now = new Date();
     var hnow = new Horaire(now.getHours(), now.getMinutes());
     var timeout;
     if (hnow < hnext) {
         timeout = (hnext - hnow) * 60 * 1000;
     } else {
-        timeout = (24 * 60 + (hnext - hnow)) * 1000 * 60;
+        if (retro)
+            timeout = (24 * 60 + (hnext - hnow)) * 1000 * 60;
+        else
+            timeout = 0;
     }
-    setTimeout(() => {
-        afunction();
-        schedule(hnext, afunction);
-    }, timeout);
+    if (n === null) {
+        setTimeout(() => {
+            afunction(arg);
+            schedule(hnext, afunction, null, retro);
+        }, timeout);
+    } else if (n > 0) {
+        setTimeout(() => {
+            afunction(arg);
+            schedule(hnext, afunction, n - 1, retro);
+        }, timeout);
+}
 }
 
 Set.prototype.append = function (s) {
@@ -125,17 +144,19 @@ function writeFuturList(newlist) {
     });
 }
 
-Array.prototype.isEqual = function(b) {
+Array.prototype.isEqual = function (b) {
     if (this.length !== b.length)
         return false;
-    for(let i in this) {
-        if (this[i] !== b[i]) 
+    for (let i in this) {
+        if (this[i] !== b[i])
             return false;
     }
     return true;
 };
 
 function nettoyageListe(socket = null) {
+
+    console.log("nettoyage");
     var date = new Date();
     var jsondate = JSON.stringify(date).substring(1);
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -152,7 +173,7 @@ function nettoyageListe(socket = null) {
     newtodolist = todolist
             .filter(c => {
                 try {
-                    console.log(c.message + " ? " + c.fin.h + ":" + c.fin.m + " <> " +date.getHours() + ":" + date.getMinutes());
+                    console.log(c.message + " ? " + c.fin.h + ":" + c.fin.m + " <> " + date.getHours() + ":" + date.getMinutes());
                     return c.fin.h < date.getHours() ||
                             (c.fin.h === date.getHours() && c.fin.m < date.getMinutes());
                 } catch (e) {
@@ -173,10 +194,8 @@ function nettoyageListe(socket = null) {
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
         writeList();
-    }
 }
-
-
+}
 
 // Chargement de la page index.html
 app.use(session({secret: 'todotopsecret'}))
@@ -224,15 +243,13 @@ app.use(session({secret: 'todotopsecret'}))
             res.redirect('/read');
         });
 
-
 var todolist = [];
 
 io.sockets.on('connection', function (socket) {
 
-
 // Lancement de la purge tous les jours à 5h05.
     schedule(new Horaire(5, 5), newDayPurge);
-    setInterval(nettoyageListe, 60000, socket);
+    //setInterval(nettoyageListe, 60000, socket);
 
     readLperm();
 
@@ -245,7 +262,7 @@ io.sockets.on('connection', function (socket) {
         var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
         var jour = tjour[new Date().getDay()];
         var date = JSON.stringify(new Date()).substring(1);
-        todolist = liste
+        var newtodolist = liste
                 .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                             (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
                             (c.date !== null && c.date.substring(0, 10) === date.substring(0, 10))))
@@ -253,6 +270,23 @@ io.sockets.on('connection', function (socket) {
                     return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
                 })
                 ;
+
+        // Les nouveaux éléments de la liste.
+        // Indique les événements à générer pour supprimer les nouveaux messages.
+        newtodolist.forEach(a => {
+            console.log(a.message);
+            var i = 0;
+            while(i < todolist.length && (todolist[i].message !== a.message)) {
+                ++i;
+            }
+            if (i === todolist.length || (i < todolist.length && todolist[i].fin.valueOf() !== a.fin.valueOf())) {
+                console.log("prevision d'expiration pour " + a.message);
+               
+                //schedule(a.fin, nettoyageListe, 1, false, socket);
+            }
+        });
+        todolist = newtodolist;
+
 
         writeList();
         writeFuturList(liste.filter(c =>
