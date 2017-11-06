@@ -152,9 +152,11 @@ function nettoyageListe(socket = null) {
     newtodolist = todolist
             .filter(c => {
                 try {
-                    return c.fin.h > date.getHours() ||
-                            (c.fin.h === date.getHours() && c.fin.m > date.getMinutes());
+                    console.log(c.message + " ? " + c.fin.h + ":" + c.fin.m + " <> " +date.getHours() + ":" + date.getMinutes());
+                    return c.fin.h < date.getHours() ||
+                            (c.fin.h === date.getHours() && c.fin.m < date.getMinutes());
                 } catch (e) {
+                    console.log('NettoyageListe (erreur) ' + e);
                     return true;
                 }
             })
