@@ -200,7 +200,8 @@
                 var message = document.getElementById("newtodo").value.trim();
                 var liste = [];
                 for (var e of document.getElementsByClassName("message")) {
-                    liste.push(JSON.parse(e.value))
+                    console.log("Dans send " + e.value);
+                    liste.push(JSON.parse(e.value));
                 }
 
                 if (message !== "") {
@@ -209,18 +210,36 @@
                         date.setHours(23);
                         date.setMinutes(59);
                     }
-
-                    var hrd = new Date();
-                    hrd.setHours(document.getElementById("hdebut").value);
-                    hrd.setMinutes(document.getElementById("mdebut").value);
-                    var hrf = new Date();
-                    hrf.setHours(document.getElementById("hfin").value);
-                    hrf.setMinutes(document.getElementById("mfin").value);
-                    var cm = {date: date, jour: document.getElementById("idjour").value, debut: hrd, fin: hrf, message: message};
-                    console.log(cm);
+                    var today = new Date();
+                    var hrd = new Date(
+                            today.getFullYear(), 
+                            today.getMonth(), 
+                            today.getDate(), 
+                            (document.getElementById("hdebut").value), 
+                            document.getElementById("mdebut").value, 0);
+     
+                    var hrf = new Date(
+                            today.getFullYear(), 
+                            today.getMonth(), 
+                            today.getDate(), 
+                            (document.getElementById("hfin").value), 
+                            document.getElementById("mfin").value,0);
+                    console.log("Début indiqué : " + 
+                            document.getElementById("hdebut").value + 
+                            ":" +
+                            document.getElementById("mdebut").value);
+                    console.log("Fin indiquée : " + 
+                            document.getElementById("hfin").value + 
+                            ":" +
+                            document.getElementById("mfin").value);
+                    console.log("Heure début " + hrd);
+                    console.log("Heure fin " + hrf);
+                    console.log("Heure today " + today.getHours()+":"+today.getMinutes());
+                    var cm = new ChronoMessage(date, document.getElementById("idjour").value, hrd, hrf, message);
+                    console.log("Que vaut CM " + cm.toVeryString());
                     liste.push(cm);
-                    console.log(cm);
                 }
+                datify(liste);
                 socket.emit('change_list', liste); // Transmet la liste au serveur
                 init();
                 return false;
@@ -366,7 +385,9 @@
             // Demande de mise à jour
             socket.on('update', function (data) {
                 $('#zone_msg').empty();
-                for (var i in data.todolist) {
+                datify(data.todolist);
+                for (let i in data.todolist) {
+                    console.log("UPDATE " + data.todolist[i].toVeryString());
                     $('#zone_msg').append(one_msg(i, JSON.stringify(data.todolist[i])));
                 }
             });

@@ -4,11 +4,11 @@
  * and open the template in the editor.
  */
 
-function Horaire(h, m) {
+var Horaire = function(h, m) {
     this.h = parseInt(h);
     this.m = parseInt(m);
     this.f = new Intl.NumberFormat('fr', {minimumIntegerDigits: 2});
-}
+};
 
 Horaire.prototype.toString = function () {
     return this.f.format(this.h) + ':' + this.f.format(this.m);
@@ -38,21 +38,44 @@ Horaire.prototype.valueOf = function () {
     return this.h * 60 + this.m;
 };
 
-function ChronoMessage(date, jour, debut, fin, message) {
-    this.date = date;
+var ChronoMessage = function(date, jour, debut, fin, message) {
+    if (date === null)
+        this.date = date;
+    else
+        this.date = new Date(date);
     this.jour = jour;
-    this.debut = debut;
-    this.fin = fin;
+    this.debut = new Date(debut);
+    this.fin = new Date(fin);
     this.message = message;
-}
+};
 
-function datify(liste) {
-    for(let cm of liste) {
-        cm.date = new Date(cm.date);
-        cm.debut = new Date(cm.debut);
-        cm.fin = new Date(cm.fin);
+var printChronoliste = function(msg, liste) {
+    console.log(msg + '\n');
+    for (let cm of liste) {
+        console.log(cm.toVeryString());
     }
-}
+};
+ 
+var datify = function(liste) {
+    console.log("Dans datify : len(liste)" + liste.length);
+    var newliste = [];
+    for (var i in liste) {
+        console.log(i + " => " + JSON.stringify(liste[i]));
+        var cm = new ChronoMessage(
+                liste[i].date,
+                liste[i].jour,
+                liste[i].debut,
+                liste[i].fin,
+                liste[i].message);
+
+        if (cm !== null && cm !== undefined) {
+            newliste.push(cm);
+            console.log(cm.toVeryString());
+        }
+    }
+    liste = newliste;
+    console.log("Fin de datify");
+};
 
 /*
  * Execute a function everyday at hnext if n == 0
@@ -64,9 +87,9 @@ function datify(liste) {
  * @param {type} n
  * @returns {undefined}
  */
-function schedule(next, afunction, n = null, retro = true, arg = null) {
-    var now = new Date(Date.UTC(next.getFullYear()), next.getMonth(),next.getDate());
-    
+var schedule = function(next, afunction, n = null, retro = true, arg = null) {
+    var now = new Date(Date.UTC(next.getFullYear()), next.getMonth(), next.getDate());
+
     var timeout;
     if (now < next) {
         timeout = next - now;
@@ -87,10 +110,14 @@ function schedule(next, afunction, n = null, retro = true, arg = null) {
             schedule(next, afunction, n - 1, retro, arg);
         }, timeout);
 }
-}
+};
 
 ChronoMessage.prototype.toString = function () {
     return this.message;
+};
+
+ChronoMessage.prototype.toVeryString = function () {
+    return  this.date + " - " + this.jour + " - " + this.debut + " - " + this.fin + " - " + this.message;
 };
 
 try {
@@ -98,6 +125,7 @@ try {
     exports.ChronoMessage = ChronoMessage;
     exports.schedule = schedule;
     exports.datify = datify;
+    exports.printChronoliste = printChronoliste;
 } catch (e) {
     console.log(e);
 }

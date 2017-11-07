@@ -10,9 +10,10 @@ var server = require('http').createServer(app),
         Horaire = require('./js/ChronoMessage').Horaire,
         schedule = require('./js/ChronoMessage').schedule,
         datify = require('./js/ChronoMessage').datify,
+        printChronoliste = require('./js/ChronoMessage').printChronoliste,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
-function newDayPurge() {
+var newDayPurge = function () {
     var liste = [];
     fs.readFile('lperm', 'utf8', (err, data) => {
         if (err) {
@@ -20,26 +21,23 @@ function newDayPurge() {
         } else {
             try {
                 liste = JSON.parse(data);
-                console.log('Dans newDayPurge (lperm)' + liste);
                 fs.readFile('lfutur', 'utf8', (err, data) => {
                     if (err) {
                         console.log("Erreur de lecture du fichier lfutur lors de la purge");
                     } else {
                         try {
-                            console.log('Dans newDayPurge (data)' + data);
                             var s = new Set(JSON.parse(data));
-                            console.log('Dans newDayPurge (lfutur)' + s);
                             var date = new Date();
                             s.append(liste);
                             liste = s.toArray();
-                            console.log('Dans newDayPurge (lfutur + lperm)' + liste);
+                            //printChronoliste("Dans newDayPurge, liste avant datification ", liste);                            
                             datify(liste);
+                            printChronoliste("Dans newDayPurge, liste après datification ", liste);
                             writeList('lperm', liste.filter(c => c.date === null ||
                                         c.date === date)
                                     .sort(function (c1, c2) {
                                         return c1 - c2;
                                     }));
-
                             writeList('lfutur', liste.filter(c => c.date !== null &&
                                         c.date > date));
                         } catch (e) {
@@ -52,7 +50,7 @@ function newDayPurge() {
             }
         }
     });
-}
+};
 
 Set.prototype.append = function (s) {
     for (let e of s) {
@@ -68,7 +66,7 @@ Set.prototype.toArray = function () {
     return r;
 };
 
-function readLperm() {
+var readLperm = function () {
     fs.readFile('lperm', 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier lperm");
@@ -82,9 +80,9 @@ function readLperm() {
             }
         }
     });
-}
+};
 
-function readLfutur() {
+var readLfutur = function () {
     fs.readFile('lfutur', 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier lfutur");
@@ -97,17 +95,17 @@ function readLfutur() {
             }
         }
     });
-}
+};
 
-function writeList(file = 'lperm', list = todolist) {
+var writeList = function (file = 'lperm', list = todolist) {
     fs.writeFile(file, JSON.stringify(list) + '\n', (err) => {
         if (err) {
             console.log("Problème d'écriture dans le fichier lperm");
         }
     });
-}
+};
 
-function writeFuturList(newlist) {
+var writeFuturList = function (newlist) {
     fs.readFile('lfutur', 'utf8', (err, data) => {
         if (err) {
             fs.writeFile('lfutur', JSON.stringify(newlist) + '\n', (err) => {
@@ -131,7 +129,7 @@ function writeFuturList(newlist) {
             }
         }
     });
-}
+};
 
 Array.prototype.isEqual = function (b) {
     if (this.length !== b.length)
@@ -143,7 +141,9 @@ Array.prototype.isEqual = function (b) {
     return true;
 };
 
-function nettoyageListe(socket = null) {
+
+
+var nettoyageListe = function (socket = null) {
 
     var date = new Date();
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -152,10 +152,8 @@ function nettoyageListe(socket = null) {
     newtodolist = todolist
             .filter(c => {
                 try {
-                    console.log(c.message + "-" + c.fin);
                     return date < c.fin;
                 } catch (e) {
-                    console.log('NettoyageListe (erreur) ' + e);
                     return true;
                 }
             })
@@ -174,7 +172,7 @@ function nettoyageListe(socket = null) {
         socket.emit('update', {todolist: todolist});
         writeList();
 }
-}
+};
 
 // Chargement de la page index.html
 app.use(session({secret: 'todotopsecret'}))
@@ -262,9 +260,14 @@ io.sockets.on('connection', function (socket) {
         var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
         var jour = tjour[new Date().getDay()];
         var date = new Date();
-        console.log(liste);
+
         datify(liste);
-        console.log(liste);
+
+        // La liste est filtrée et triée puis rangée dans newtodolist
+        // Sont conservés pour "aujourd'hui", les messages :
+        //    - sans date et sans jour
+        //    - sans date et dont le jour est aujourd'hui ou tous les jours
+        //    - avec date et la date est aujourd'hui
         var newtodolist = liste
                 .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                             (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
@@ -272,7 +275,8 @@ io.sockets.on('connection', function (socket) {
                 .sort(function (c1, c2) {
                     return c1.debut - c2.debut;
                 });
-        console.log(liste);
+        console.log("La liste filtrée et triée");
+        console.log(newtodolist);
         // Les nouveaux éléments de la liste.
         // Indique les événements à générer pour supprimer les nouveaux messages.
         newtodolist.forEach(a => {
