@@ -260,21 +260,17 @@ io.sockets.on('connection', function (socket) {
 // Lancement de la purge tous les jours à 5h05.
     schedule(new Horaire(5, 5), newDayPurge);
     setInterval(nettoyageListe, 60*60*1000, socket);
-    
-    console.log('Lecture de lfutur');
     readLfutur();
-    console.log(futurlist);
     
     // Edition de lfutur
     socket.on('neweditlfutur', function (message) {
-        console.log("new editeur");
         socket.emit('updateeditlfutur', {todolist: futurlist});
     });
     // Supprimer la tâche i
     socket.on('sup_msglfutur', function (i) {
         futurlist.splice(i, 1);
         writeList('lfutur', futurlist);
-        socket.emit('update', {todolist: futurlist});
+        socket.emit('updateeditlfutur', {todolist: futurlist});
     });
     
     
@@ -282,10 +278,8 @@ io.sockets.on('connection', function (socket) {
     socket.on('change_listlfutur', function (liste) {
         
         futurlist = liste;
-
         writeList('lfutur', futurlist);
-
-        socket.emit('update', {todolist: futurlist});
+        socket.emit('updateeditlfutur', {todolist: futurlist});
     });
 
     readLperm();

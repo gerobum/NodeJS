@@ -349,11 +349,10 @@
             //var socket = io.connect('http://localhost:8080');
 
             document.title = 'Édition de "lfutur" dans Bonjour Maman';
-            console.log('Emission de new lfutur');
             socket.emit('neweditlfutur', '');
 
             // Demande de mise à jour
-            socket.on('updatelfutur', function (data) {
+            socket.on('updateeditlfutur', function (data) {
                 $('#zone_msg').empty();
                 for (var i in data.todolist) {
                     $('#zone_msg').append(one_msg(i, JSON.stringify(data.todolist[i])));
