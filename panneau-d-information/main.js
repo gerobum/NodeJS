@@ -59,6 +59,7 @@ function newDayPurge() {
 function schedule(hnext, afunction, n = null, retro = true, arg = null) {
     var now = new Date();
     var hnow = new Horaire(now.getHours(), now.getMinutes());
+    console.log("schedule, horaire:" + hnext.toString() + " - n:" + n + " - retro: " + retro + " - arg: " + arg);
     var timeout;
     if (hnow < hnext) {
         timeout = (hnext - hnow) * 60 * 1000;
@@ -71,12 +72,13 @@ function schedule(hnext, afunction, n = null, retro = true, arg = null) {
     if (n === null) {
         setTimeout(() => {
             afunction(arg);
-            schedule(hnext, afunction, null, retro);
+            schedule(hnext, afunction, null, retro, arg);
         }, timeout);
     } else if (n > 0) {
+        console.log("setTimeout");
         setTimeout(() => {
             afunction(arg);
-            schedule(hnext, afunction, n - 1, retro);
+            schedule(hnext, afunction, n - 1, retro, arg);
         }, timeout);
 }
 }
@@ -194,7 +196,7 @@ function nettoyageListe(socket = null) {
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
         writeList();
-}
+    }
 }
 
 // Chargement de la page index.html
@@ -279,10 +281,8 @@ io.sockets.on('connection', function (socket) {
             while(i < todolist.length && (todolist[i].message !== a.message)) {
                 ++i;
             }
-            if (i === todolist.length || (i < todolist.length && todolist[i].fin.valueOf() !== a.fin.valueOf())) {
-                console.log("prevision d'expiration pour " + a.message);
-               
-                //schedule(a.fin, nettoyageListe, 1, false, socket);
+            if (i === todolist.length || (i < todolist.length && todolist[i].fin.valueOf() !== a.fin.valueOf())) {              
+                schedule(new Horaire(a.fin.h, a.fin.m), nettoyageListe, 1, false, socket);
             }
         });
         todolist = newtodolist;

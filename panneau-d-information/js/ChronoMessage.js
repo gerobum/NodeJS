@@ -5,8 +5,8 @@
  */
 
 function Horaire(h, m) {
-    this.h = h;
-    this.m = m;
+    this.h = parseInt(h);
+    this.m = parseInt(m);
     this.f = new Intl.NumberFormat('fr', {minimumIntegerDigits: 2});
 }
 
