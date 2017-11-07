@@ -8,6 +8,7 @@ var server = require('http').createServer(app),
         bodyParser = require('body-parser'),
         ChronoMessage = require('./js/ChronoMessage').ChronoMessage,
         Horaire = require('./js/ChronoMessage').Horaire,
+        schedule = require('./js/ChronoMessage').schedule,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
 function newDayPurge() {
@@ -45,40 +46,6 @@ function newDayPurge() {
             }
         }
     });
-}
-/*
- * Execute a function everyday at hnext if n == 0
- *                   or n days at hnext if n > 0
- * If rebour then
- *     
- * @param {type} hnext
- * @param {type} afunction
- * @param {type} n
- * @returns {undefined}
- */
-function schedule(hnext, afunction, n = null, retro = true, arg = null) {
-    var now = new Date();
-    var hnow = new Horaire(now.getHours(), now.getMinutes());
-    var timeout;
-    if (hnow < hnext) {
-        timeout = (hnext - hnow) * 60 * 1000;
-    } else {
-        if (retro)
-            timeout = (24 * 60 + (hnext - hnow)) * 1000 * 60;
-        else
-            timeout = 0;
-    }
-    if (n === null) {
-        setTimeout(() => {
-            afunction(arg);
-            schedule(hnext, afunction, null, retro, arg);
-        }, timeout);
-    } else if (n > 0) {
-        setTimeout(() => {
-            afunction(arg);
-            schedule(hnext, afunction, n - 1, retro, arg);
-        }, timeout);
-}
 }
 
 Set.prototype.append = function (s) {

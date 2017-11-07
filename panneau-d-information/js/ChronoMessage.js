@@ -47,6 +47,42 @@ function ChronoMessage(date, jour, debut, fin, message) {
 }
 ;
 
+
+/*
+ * Execute a function everyday at hnext if n == 0
+ *                   or n days at hnext if n > 0
+ * If rebour then
+ *     
+ * @param {type} hnext
+ * @param {type} afunction
+ * @param {type} n
+ * @returns {undefined}
+ */
+function schedule(hnext, afunction, n = null, retro = true, arg = null) {
+    var now = new Date();
+    var hnow = new Horaire(now.getHours(), now.getMinutes());
+    var timeout;
+    if (hnow < hnext) {
+        timeout = (hnext - hnow) * 60 * 1000;
+    } else {
+        if (retro)
+            timeout = (24 * 60 + (hnext - hnow)) * 1000 * 60;
+        else
+            timeout = 0;
+    }
+    if (n === null) {
+        setTimeout(() => {
+            afunction(arg);
+            schedule(hnext, afunction, null, retro, arg);
+        }, timeout);
+    } else if (n > 0) {
+        setTimeout(() => {
+            afunction(arg);
+            schedule(hnext, afunction, n - 1, retro, arg);
+        }, timeout);
+}
+}
+
 ChronoMessage.prototype.toString = function () {
     return this.message;
 };
@@ -54,6 +90,7 @@ ChronoMessage.prototype.toString = function () {
 try {
     exports.Horaire = Horaire;
     exports.ChronoMessage = ChronoMessage;
+    exports.schedule = schedule;
 } catch (e) {
     console.log(e);
 }
