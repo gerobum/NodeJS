@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>Bonjour Maman</title>
+        <title>Édition de "lfutur" dans Bonjour Maman</title>
         <style>
             #zone_msg {
                 color: white;
@@ -55,7 +55,7 @@
     </head>
 
     <body>
-        <h1 class="titre">Bonjour Maman</h1>        
+        <h1 class="titre">Édition de "lfutur" dans Bonjour Maman</h1>        
         <h2 class="titre">Nous sommes le <span id="div_date"></span></h2>
         <h2 class="titre" style="padding-bottom: 5px;">Il est <span id="div_horloge"></span></h2>
 
@@ -164,12 +164,6 @@
         </p>
         <textarea cols="80" rows="10" placeholder="Un message" name="newtodo" id="newtodo" ></textarea>
         <button id="sendbutton">Envoyer le message</button>
-        
-        <p>
-            <img src="images/image0.png" alt="image0" />
-            <img src="images/image1.png" alt="image1" />
-            <img src="images/image2.png" alt="image2" />
-        </p>
 
         <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -216,7 +210,7 @@
 
                     liste.push(cm);
                 }
-                socket.emit('change_list', liste); // Transmet la liste au serveur
+                socket.emit('change_listlfutur', liste); // Transmet la liste au serveur
                 init();
                 return false;
             }
@@ -289,11 +283,11 @@
             setInterval(horloge, 1000, document);
             //};
         </script>
-        <script>
+        <!--<script>
             $(function () {
                 $("#datepicker").datepicker();
             });
-        </script>
+        </script>-->
         <script>
 
             var init = function () {
@@ -352,21 +346,21 @@
             // Connexion à socket.io
             //var socket = io.connect('http://192.168.1.56:8080');
             var socket = io.connect('http://'+hostname+':8080');
-            //var socket = io.connect('http://hostname:8080');
+            //var socket = io.connect('http://localhost:8080');
 
-            document.title = "Bonjour Maman";
-
-            socket.emit('new', '');
+            document.title = 'Édition de "lfutur" dans Bonjour Maman';
+            console.log('Emission de new lfutur');
+            socket.emit('neweditlfutur', '');
 
             // Demande de mise à jour
-            socket.on('update', function (data) {
+            socket.on('updatelfutur', function (data) {
                 $('#zone_msg').empty();
                 for (var i in data.todolist) {
                     $('#zone_msg').append(one_msg(i, JSON.stringify(data.todolist[i])));
                 }
             });
             function sup(i) {
-                socket.emit('sup_msg', i);
+                socket.emit('sup_msglfutur', i);
             }
         </script>
     </body>

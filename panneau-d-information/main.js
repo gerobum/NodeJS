@@ -110,6 +110,23 @@ function readLperm() {
     });
 }
 
+function readLfutur() {
+    console.log('Lecture de lfutur');
+    fs.readFile('lfutur', 'utf8', (err, data) => {
+        if (err) {
+            console.log("Erreur de lecture du fichier lfutur");
+        } else {
+            try {
+                console.log('avant : ' + JSON.stringify(futurlist));
+                futurlist = JSON.parse(data);
+                console.log('après : ' + JSON.stringify(futurlist));
+            } catch (e) {
+                console.log("Erreur de chargement de la liste " + e);
+            }
+        }
+    });
+}
+
 function writeList(file = 'lperm', list = todolist) {
     fs.writeFile(file, JSON.stringify(list) + '\n', (err) => {
         if (err) {
@@ -205,20 +222,15 @@ app.use(session({secret: 'todotopsecret'}))
             }
             next();
         })
-        /* On affiche la todolist et le formulaire */
         .get('/read', function (req, res) {
             res.sendFile(__dirname + '/read.html');
-            //res.sendFile('/index.html', {root: __dirname});
         })
-        /* On affiche la todolist et le formulaire */
         .get('/write', function (req, res) {
             res.sendFile(__dirname + '/write.html');
-            //res.sendFile('/index.html', {root: __dirname});
         })
         /* Edition du fichier lfutur */
-        .get('/edit', function (req, res) {
-            res.sendFile(__dirname + '/write.html');
-            //res.sendFile('/index.html', {root: __dirname});
+        .get('/editlfutur', function (req, res) {
+            res.sendFile(__dirname + '/editlfutur.html');
         })
 
         /* Supprime un élément de la todolist */
@@ -241,15 +253,44 @@ app.use(session({secret: 'todotopsecret'}))
         });
 
 var todolist = [];
+var futurlist = [];
 
 io.sockets.on('connection', function (socket) {
 
 // Lancement de la purge tous les jours à 5h05.
     schedule(new Horaire(5, 5), newDayPurge);
-    //setInterval(nettoyageListe, 60000, socket);
+    setInterval(nettoyageListe, 60*60*1000, socket);
+    
+    console.log('Lecture de lfutur');
+    readLfutur();
+    console.log(futurlist);
+    
+    // Edition de lfutur
+    socket.on('neweditlfutur', function (message) {
+        console.log("new editeur");
+        socket.emit('updateeditlfutur', {todolist: futurlist});
+    });
+    // Supprimer la tâche i
+    socket.on('sup_msglfutur', function (i) {
+        futurlist.splice(i, 1);
+        writeList('lfutur', futurlist);
+        socket.emit('update', {todolist: futurlist});
+    });
+    
+    
+    // Une tâche a été ajoutée
+    socket.on('change_listlfutur', function (liste) {
+        
+        futurlist = liste;
+
+        writeList('lfutur', futurlist);
+
+        socket.emit('update', {todolist: futurlist});
+    });
 
     readLperm();
 
+    // Traitement classique
     socket.on('new', function (message) {
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
