@@ -59,7 +59,6 @@ function newDayPurge() {
 function schedule(hnext, afunction, n = null, retro = true, arg = null) {
     var now = new Date();
     var hnow = new Horaire(now.getHours(), now.getMinutes());
-    console.log("schedule, horaire:" + hnext.toString() + " - n:" + n + " - retro: " + retro + " - arg: " + arg);
     var timeout;
     if (hnow < hnext) {
         timeout = (hnext - hnow) * 60 * 1000;
@@ -75,7 +74,6 @@ function schedule(hnext, afunction, n = null, retro = true, arg = null) {
             schedule(hnext, afunction, null, retro, arg);
         }, timeout);
     } else if (n > 0) {
-        console.log("setTimeout");
         setTimeout(() => {
             afunction(arg);
             schedule(hnext, afunction, n - 1, retro, arg);
@@ -158,7 +156,6 @@ Array.prototype.isEqual = function (b) {
 
 function nettoyageListe(socket = null) {
 
-    console.log("nettoyage");
     var date = new Date();
     var jsondate = JSON.stringify(date).substring(1);
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -175,9 +172,7 @@ function nettoyageListe(socket = null) {
     newtodolist = todolist
             .filter(c => {
                 try {
-                    console.log(c.message + " ? " + c.fin.h + ":" + c.fin.m + " <> " + date.getHours() + ":" + date.getMinutes());
-                    return c.fin.h < date.getHours() ||
-                            (c.fin.h === date.getHours() && c.fin.m < date.getMinutes());
+                    return new Horaire(date.getHours(), date.getMinutes()) < new Horaire(c.fin.h, c.fin.m);
                 } catch (e) {
                     console.log('NettoyageListe (erreur) ' + e);
                     return true;
@@ -276,7 +271,6 @@ io.sockets.on('connection', function (socket) {
         // Les nouveaux éléments de la liste.
         // Indique les événements à générer pour supprimer les nouveaux messages.
         newtodolist.forEach(a => {
-            console.log(a.message);
             var i = 0;
             while(i < todolist.length && (todolist[i].message !== a.message)) {
                 ++i;
