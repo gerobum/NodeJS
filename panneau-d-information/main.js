@@ -9,6 +9,7 @@ var server = require('http').createServer(app),
         ChronoMessage = require('./js/ChronoMessage').ChronoMessage,
         Horaire = require('./js/ChronoMessage').Horaire,
         schedule = require('./js/ChronoMessage').schedule,
+        datify = require('./js/ChronoMessage').datify,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
 function newDayPurge() {
@@ -25,17 +26,18 @@ function newDayPurge() {
                     } else {
                         try {
                             var s = new Set(JSON.parse(data));
-                            var date = JSON.stringify(new Date()).substring(1);
+                            var date = new Date();
                             s.append(liste);
                             liste = s.toArray();
+                            datify(liste);
                             writeList('lperm', liste.filter(c => c.date === null ||
-                                        c.date.substring(0, 10) === date.substring(0, 10))
+                                        c.date === date)
                                     .sort(function (c1, c2) {
-                                        return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
+                                        return c1 - c2;
                                     }));
 
                             writeList('lfutur', liste.filter(c => c.date !== null &&
-                                        c.date.substring(0, 10) > date.substring(0, 10)));
+                                        c.date > date));
                         } catch (e) {
                             console.log("Erreur de chargement de la liste " + e);
                         }
@@ -69,6 +71,7 @@ function readLperm() {
         } else {
             try {
                 todolist = JSON.parse(data);
+                datify(todolist);
                 nettoyageListe();
             } catch (e) {
                 console.log("Erreur de chargement de la liste " + e);
@@ -78,15 +81,13 @@ function readLperm() {
 }
 
 function readLfutur() {
-    console.log('Lecture de lfutur');
     fs.readFile('lfutur', 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier lfutur");
         } else {
             try {
-                console.log('avant : ' + JSON.stringify(futurlist));
                 futurlist = JSON.parse(data);
-                console.log('après : ' + JSON.stringify(futurlist));
+                datify(futurlist);
             } catch (e) {
                 console.log("Erreur de chargement de la liste " + e);
             }
@@ -141,7 +142,6 @@ Array.prototype.isEqual = function (b) {
 function nettoyageListe(socket = null) {
 
     var date = new Date();
-    var jsondate = JSON.stringify(date).substring(1);
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     var jour = tjour[new Date().getDay()];
 
@@ -156,7 +156,7 @@ function nettoyageListe(socket = null) {
     newtodolist = todolist
             .filter(c => {
                 try {
-                    return new Horaire(date.getHours(), date.getMinutes()) < new Horaire(c.fin.h, c.fin.m);
+                    return date < c.fin;
                 } catch (e) {
                     console.log('NettoyageListe (erreur) ' + e);
                     return true;
@@ -164,9 +164,9 @@ function nettoyageListe(socket = null) {
             })
             .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                         (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
-                        (c.date !== null && c.date.substring(0, 10) === jsondate.substring(0, 10))))
+                        (c.date !== null && c.date === date)))
             .sort(function (c1, c2) {
-                return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
+                return c1 - c2;
             });
 
     if (socket !== null && !todolist.isEqual(newtodolist)) {
@@ -225,7 +225,9 @@ var futurlist = [];
 io.sockets.on('connection', function (socket) {
 
 // Lancement de la purge tous les jours à 5h05.
-    schedule(new Horaire(5, 5), newDayPurge);
+    var date = new Date();
+    date.getHours(5);
+    // #### A remettre #### schedule(date, newDayPurge);
     setInterval(nettoyageListe, 60*60*1000, socket);
     readLfutur();
     
@@ -260,16 +262,18 @@ io.sockets.on('connection', function (socket) {
     socket.on('change_list', function (liste) {
         var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
         var jour = tjour[new Date().getDay()];
-        var date = JSON.stringify(new Date()).substring(1);
+        var date = new Date();
+        console.log(liste);
+        datify(liste);
+        console.log(liste);
         var newtodolist = liste
                 .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                             (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
-                            (c.date !== null && c.date.substring(0, 10) === date.substring(0, 10))))
+                            (c.date !== null && c.date === date)))
                 .sort(function (c1, c2) {
-                    return (c1.debut.h * 60 + c1.debut.m) - (c2.debut.h * 60 + c2.debut.m);
-                })
-                ;
-
+                    return (c1.debut) - (c2.debut);
+                });
+        console.log(liste);
         // Les nouveaux éléments de la liste.
         // Indique les événements à générer pour supprimer les nouveaux messages.
         newtodolist.forEach(a => {
@@ -277,8 +281,8 @@ io.sockets.on('connection', function (socket) {
             while(i < todolist.length && (todolist[i].message !== a.message)) {
                 ++i;
             }
-            if (i === todolist.length || (i < todolist.length && todolist[i].fin.valueOf() !== a.fin.valueOf())) {              
-                schedule(new Horaire(a.fin.h, a.fin.m), nettoyageListe, 1, false, socket);
+            if (i === todolist.length || (i < todolist.length && todolist[i].fin !== a.fin)) {              
+                schedule(a.fin, nettoyageListe, 1, false, socket);
             }
         });
         todolist = newtodolist;
@@ -286,7 +290,7 @@ io.sockets.on('connection', function (socket) {
 
         writeList();
         writeFuturList(liste.filter(c =>
-            (c.date !== null && c.date.substring(0, 10) > date.substring(0, 10)) ||
+            (c.date !== null && c.date > date) ||
                     c.date === null
         ));
 

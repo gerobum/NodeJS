@@ -45,8 +45,14 @@ function ChronoMessage(date, jour, debut, fin, message) {
     this.fin = fin;
     this.message = message;
 }
-;
 
+function datify(liste) {
+    for(let cm of liste) {
+        cm.date = new Date(cm.date);
+        cm.debut = new Date(cm.debut);
+        cm.fin = new Date(cm.fin);
+    }
+}
 
 /*
  * Execute a function everyday at hnext if n == 0
@@ -58,27 +64,27 @@ function ChronoMessage(date, jour, debut, fin, message) {
  * @param {type} n
  * @returns {undefined}
  */
-function schedule(hnext, afunction, n = null, retro = true, arg = null) {
-    var now = new Date();
-    var hnow = new Horaire(now.getHours(), now.getMinutes());
+function schedule(next, afunction, n = null, retro = true, arg = null) {
+    var now = new Date(Date.UTC(next.getFullYear()), next.getMonth(),next.getDate());
+    
     var timeout;
-    if (hnow < hnext) {
-        timeout = (hnext - hnow) * 60 * 1000;
+    if (now < next) {
+        timeout = next - now;
     } else {
         if (retro)
-            timeout = (24 * 60 + (hnext - hnow)) * 1000 * 60;
+            timeout = next - now;
         else
             timeout = 0;
     }
     if (n === null) {
         setTimeout(() => {
             afunction(arg);
-            schedule(hnext, afunction, null, retro, arg);
+            schedule(next, afunction, null, retro, arg);
         }, timeout);
     } else if (n > 0) {
         setTimeout(() => {
             afunction(arg);
-            schedule(hnext, afunction, n - 1, retro, arg);
+            schedule(next, afunction, n - 1, retro, arg);
         }, timeout);
 }
 }
@@ -91,6 +97,7 @@ try {
     exports.Horaire = Horaire;
     exports.ChronoMessage = ChronoMessage;
     exports.schedule = schedule;
+    exports.datify = datify;
 } catch (e) {
     console.log(e);
 }
