@@ -217,8 +217,9 @@
                     hrf.setHours(document.getElementById("hfin").value);
                     hrf.setMinutes(document.getElementById("mfin").value);
                     var cm = {date: date, jour: document.getElementById("idjour").value, debut: hrd, fin: hrf, message: message};
-
+                    console.log(cm);
                     liste.push(cm);
+                    console.log(cm);
                 }
                 socket.emit('change_list', liste); // Transmet la liste au serveur
                 init();
