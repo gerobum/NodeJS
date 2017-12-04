@@ -55,26 +55,33 @@ var printChronoliste = function(msg, liste) {
         console.log(cm.toVeryString());
     }
 };
+
+var sameday = function(d1, d2) {
+    try {
+        return d1.getDate() === d2.getDate() &&
+               d1.getMonth() === d2.getMonth() &&
+               d1.getFullYear() === d2.getFullYear();
+   } catch(err) {
+       return false;
+   }
+}
  
 var datify = function(liste) {
-    console.log("Dans datify : len(liste)" + liste.length);
     var newliste = [];
-    for (var i in liste) {
-        console.log(i + " => " + JSON.stringify(liste[i]));
+    for (var e of liste) {
         var cm = new ChronoMessage(
-                liste[i].date,
-                liste[i].jour,
-                liste[i].debut,
-                liste[i].fin,
-                liste[i].message);
+                e.date,
+                e.jour,
+                e.debut,
+                e.fin,
+                e.message);
 
         if (cm !== null && cm !== undefined) {
             newliste.push(cm);
-            console.log(cm.toVeryString());
         }
     }
-    liste = newliste;
-    console.log("Fin de datify");
+    return newliste;
+    //console.log("Fin de datify");
 };
 
 /*
@@ -125,6 +132,7 @@ try {
     exports.ChronoMessage = ChronoMessage;
     exports.schedule = schedule;
     exports.datify = datify;
+    exports.sameday = sameday;
     exports.printChronoliste = printChronoliste;
 } catch (e) {
     console.log(e);

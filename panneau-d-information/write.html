@@ -239,7 +239,7 @@
                     console.log("Que vaut CM " + cm.toVeryString());
                     liste.push(cm);
                 }
-                datify(liste);
+                liste = datify(liste);
                 socket.emit('change_list', liste); // Transmet la liste au serveur
                 init();
                 return false;
@@ -385,7 +385,7 @@
             // Demande de mise à jour
             socket.on('update', function (data) {
                 $('#zone_msg').empty();
-                datify(data.todolist);
+                data.todolist = datify(data.todolist);
                 for (let i in data.todolist) {
                     console.log("UPDATE " + data.todolist[i].toVeryString());
                     $('#zone_msg').append(one_msg(i, JSON.stringify(data.todolist[i])));

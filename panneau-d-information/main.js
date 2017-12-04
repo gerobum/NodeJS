@@ -10,6 +10,7 @@ var server = require('http').createServer(app),
         Horaire = require('./js/ChronoMessage').Horaire,
         schedule = require('./js/ChronoMessage').schedule,
         datify = require('./js/ChronoMessage').datify,
+        sameday = require('./js/ChronoMessage').sameday,
         printChronoliste = require('./js/ChronoMessage').printChronoliste,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
@@ -31,10 +32,10 @@ var newDayPurge = function () {
                             s.append(liste);
                             liste = s.toArray();
                             //printChronoliste("Dans newDayPurge, liste avant datification ", liste);                            
-                            datify(liste);
-                            printChronoliste("Dans newDayPurge, liste après datification ", liste);
+                            liste = datify(liste);
+                            //printChronoliste("Dans newDayPurge, liste après datification ", liste);
                             writeList('lperm', liste.filter(c => c.date === null ||
-                                        c.date === date)
+                                        sameday(c.date, date))
                                     .sort(function (c1, c2) {
                                         return c1 - c2;
                                     }));
@@ -73,7 +74,7 @@ var readLperm = function () {
         } else {
             try {
                 todolist = JSON.parse(data);
-                datify(todolist);
+                todolist = datify(todolist);
                 nettoyageListe();
             } catch (e) {
                 console.log("Erreur de chargement de la liste dans readLperm" + e);
@@ -89,7 +90,7 @@ var readLfutur = function () {
         } else {
             try {
                 futurlist = JSON.parse(data);
-                datify(futurlist);
+                futurlist = datify(futurlist);
             } catch (e) {
                 console.log("Erreur de chargement de la liste dans readLfutur " + e);
             }
@@ -160,7 +161,7 @@ var nettoyageListe = function (socket = null) {
             .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                         (c.date === null && (c.hasOwnProperty("jour")
                                 && (c.jour === "Tous les jours" || c.jour === jour))) ||
-                        (c.date !== null && c.date === date)))
+                        (c.date !== null && sameday(c.date, date))))
             .sort(function (c1, c2) {
                 return c1 - c2;
             });
@@ -260,23 +261,23 @@ io.sockets.on('connection', function (socket) {
         var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
         var jour = tjour[new Date().getDay()];
         var date = new Date();
-
-        datify(liste);
-
+        liste = datify(liste);
         // La liste est filtrée et triée puis rangée dans newtodolist
         // Sont conservés pour "aujourd'hui", les messages :
         //    - sans date et sans jour
         //    - sans date et dont le jour est aujourd'hui ou tous les jours
         //    - avec date et la date est aujourd'hui
         var newtodolist = liste
-                .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
-                            (c.date === null && (c.hasOwnProperty("jour") && (c.jour === "Tous les jours" || c.jour === jour))) ||
-                            (c.date !== null && c.date === date)))
+                .filter(c => {
+                   
+                    return ((c.date === null && !c.hasOwnProperty("jour")) ||
+                            (c.date === null && (c.hasOwnProperty("jour") && 
+                            (c.jour === "Tous les jours" || c.jour === jour))) ||
+                            (c.date !== null && sameday(c.date, date)));
+                })
                 .sort(function (c1, c2) {
                     return c1.debut - c2.debut;
                 });
-        console.log("La liste filtrée et triée");
-        console.log(newtodolist);
         // Les nouveaux éléments de la liste.
         // Indique les événements à générer pour supprimer les nouveaux messages.
         newtodolist.forEach(a => {
