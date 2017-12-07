@@ -11,6 +11,7 @@ var server = require('http').createServer(app),
         schedule = require('./js/ChronoMessage').schedule,
         datify = require('./js/ChronoMessage').datify,
         sameday = require('./js/ChronoMessage').sameday,
+        sortedWithNoDoublon = require('./js/ChronoMessage').sortedWithNoDoublon,
         printChronoliste = require('./js/ChronoMessage').printChronoliste,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
@@ -28,19 +29,29 @@ var newDayPurge = function () {
                     } else {
                         try {
                             var s = new Set(JSON.parse(data));
+                            // #################################
+                            console.log("Le set après JSON.parse ")
+                            for (x of s) {
+                                console.log(x)
+                            }
+                            // #################################
                             var date = new Date();
                             s.append(liste);
+                            // #################################
+                            console.log("Le set avec la liste en plus " + s)
+                            console.log("Le set après JSON.parse ")
+                            for (x of s) {
+                                console.log(x)
+                            }
+                            // #################################
                             liste = s.toArray();
                             //printChronoliste("Dans newDayPurge, liste avant datification ", liste);                            
                             liste = datify(liste);
+                            
                             //printChronoliste("Dans newDayPurge, liste après datification ", liste);
-                            writeList('lperm', liste.filter(c => c.date === null ||
-                                        sameday(c.date, date))
-                                    .sort(function (c1, c2) {
-                                        return c1 - c2;
-                                    }));
-                            writeList('lfutur', liste.filter(c => c.date !== null &&
-                                        c.date > date));
+                            writeList('lperm', liste.filter(c => c.date === null || sameday(c.date, date)));
+                            
+                            writeList('lfutur', liste.filter(c => c.date !== null && c.date > date));
                         } catch (e) {
                             console.log("Erreur de chargement de la liste dans newDayPurge 1 " + e);
                         }
