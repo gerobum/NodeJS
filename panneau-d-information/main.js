@@ -11,9 +11,42 @@ var server = require('http').createServer(app),
         schedule = require('./js/ChronoMessage').schedule,
         datify = require('./js/ChronoMessage').datify,
         sameday = require('./js/ChronoMessage').sameday,
-        sortedWithNoDoublon = require('./js/ChronoMessage').sortedWithNoDoublon,
+        noDoublon = require('./js/ChronoMessage').noDoublon,
         printChronoliste = require('./js/ChronoMessage').printChronoliste,
         urlencodedParser = bodyParser.urlencoded({extended: false});
+
+var getLPerm = function(liste) {
+    return noDoublon(
+                                liste.filter(c => c.date === null || sameday(c.date, new Date())), 
+                                (c1, c2) => (c1.message < c2.message) ? -1 : ((c1.message > c2.message) ? 1 : 0)
+                            );
+};
+
+var getLFutur = function(liste) {
+    return noDoublon(
+                                liste.filter(c => c.date !== null && c.date > new Date()),
+                                (c1, c2) => { 
+                                    if (c1.message < c2.message)
+                                        return -1;
+                                    else if (c1.message > c2.message)
+                                        return 1;
+                                    else if (c1.date < c2.date)
+                                        return -1;
+                                    else if (c1.date > c2.date)
+                                        return 1;
+                                    else if (c1.jour < c2.jour)
+                                        return -1;
+                                    else if (c1.jour > c2.jour)
+                                        return 1;
+                                    else if (c1.debut < c2.debut)
+                                        return -1;
+                                    else if (c1.debut > c2.debut)
+                                        return 1;
+                                    else 
+                                        return c1.fin - c2.fin ;
+                                }      
+                                );
+};
 
 var newDayPurge = function () {
     var liste = [];
@@ -29,29 +62,19 @@ var newDayPurge = function () {
                     } else {
                         try {
                             var s = new Set(JSON.parse(data));
-                            // #################################
-                            console.log("Le set après JSON.parse ")
-                            for (x of s) {
-                                console.log(x)
-                            }
-                            // #################################
-                            var date = new Date();
                             s.append(liste);
-                            // #################################
-                            console.log("Le set avec la liste en plus " + s)
-                            console.log("Le set après JSON.parse ")
-                            for (x of s) {
-                                console.log(x)
-                            }
-                            // #################################
                             liste = s.toArray();
-                            //printChronoliste("Dans newDayPurge, liste avant datification ", liste);                            
+                                             
                             liste = datify(liste);
+                      
+                            writeList('lperm', 
+                                getLPerm(liste)
+                
+                            );
                             
-                            //printChronoliste("Dans newDayPurge, liste après datification ", liste);
-                            writeList('lperm', liste.filter(c => c.date === null || sameday(c.date, date)));
-                            
-                            writeList('lfutur', liste.filter(c => c.date !== null && c.date > date));
+                            writeList('lfutur', 
+                                getLFutur(liste)
+                            );
                         } catch (e) {
                             console.log("Erreur de chargement de la liste dans newDayPurge 1 " + e);
                         }
@@ -173,9 +196,8 @@ var nettoyageListe = function (socket = null) {
                         (c.date === null && (c.hasOwnProperty("jour")
                                 && (c.jour === "Tous les jours" || c.jour === jour))) ||
                         (c.date !== null && sameday(c.date, date))))
-            .sort(function (c1, c2) {
-                return c1 - c2;
-            });
+            .sort((c1, c2) => c1 - c2
+            );
 
     if (socket !== null && !todolist.isEqual(newtodolist)) {
         todolist = newtodolist;
@@ -300,14 +322,24 @@ io.sockets.on('connection', function (socket) {
                 schedule(a.fin, nettoyageListe, 1, false, socket);
             }
         });
-        todolist = newtodolist;
+        console.log("------- todolist avant getLPerm ----------");
+        for (let xxx of todolist) {
+            console.log(" --> " + xxx);
+        }
+
+        todolist = getLPerm(newtodolist);
+        
+        console.log("------- todolist après getLPerm ----------");
+        for (let xxx of todolist) {
+            console.log(" --> " + xxx);
+        }
 
 
         writeList();
-        writeFuturList(liste.filter(c =>
+        writeFuturList(getLFutur(liste.filter(c =>
             (c.date !== null && c.date > date) ||
                     c.date === null
-        ));
+        )));
 
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});

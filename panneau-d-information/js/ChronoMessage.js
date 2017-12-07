@@ -35,14 +35,15 @@ this.h = parseInt(h);
         return this.h * 60 + this.m;
         };
         var ChronoMessage = function(date, jour, debut, fin, message) {
-        if (date === null)
+            if (date === null) {
                 this.date = date;
-                else
+            } else {
                 this.date = new Date(date);
-                this.jour = jour;
-                this.debut = new Date(debut);
-                this.fin = new Date(fin);
-                this.message = message;
+            }
+            this.jour = jour;
+            this.debut = new Date(debut);
+            this.fin = new Date(fin);
+            this.message = message;
         };
         var printChronoliste = function(msg, liste) {
         console.log(msg + '\n');
@@ -59,15 +60,13 @@ this.h = parseInt(h);
         return false;
         }
         };
-        var sortedWithNoDoublon = function(liste, equal = (x1, x2) => x1 === x2) {
+        var noDoublon = function(liste, cmp = (x1, x2) => x1 - x2) {
             newliste = [];
             if (liste.length > 0) {
-                console.log(liste);
-                liste = liste.sort((c1, c2) => c1 - c2);
-                console.log(liste);
+                liste = liste.sort(cmp);
                 newliste.push(liste[0]);
                  for (var i = 1; i < liste.length; i += 1) {
-                    if (!equal(liste[i], liste[i-1])) {
+                    if (cmp(liste[i], liste[i-1]) !== 0) {
                         newliste.push(liste[i]);
                     }
                 }
@@ -136,7 +135,7 @@ this.h = parseInt(h);
                 exports.datify = datify;
                 exports.sameday = sameday;
                 exports.printChronoliste = printChronoliste;
-                exports.sortedWithNoDoublon = sortedWithNoDoublon;
+                exports.noDoublon = noDoublon;
         } catch (e) {
 console.log(e);
 }
