@@ -320,19 +320,9 @@ io.sockets.on('connection', function (socket) {
                 schedule(a.fin, nettoyageListe, 1, false, socket);
             }
         });
-        console.log("------- todolist avant getLPerm ----------");
-        for (let xxx of todolist) {
-            console.log(" --> " + xxx);
-        }
 
         todolist = getLPerm(newtodolist);
         
-        console.log("------- todolist après getLPerm ----------");
-        for (let xxx of todolist) {
-            console.log(" --> " + xxx);
-        }
-
-
         writeList();
         writeFuturList(getLFutur(liste.filter(c =>
             (c.date !== null && c.date > date) ||
