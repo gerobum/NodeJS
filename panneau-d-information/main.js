@@ -179,11 +179,9 @@ Array.prototype.isEqual = function (b) {
 
 
 var nettoyageListe = function (socket = null) {
-
     var date = new Date();
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     var jour = tjour[new Date().getDay()];
-
     newtodolist = todolist
             .filter(c => {
                 try {
@@ -196,7 +194,7 @@ var nettoyageListe = function (socket = null) {
                         (c.date === null && (c.hasOwnProperty("jour")
                                 && (c.jour === "Tous les jours" || c.jour === jour))) ||
                         (c.date !== null && sameday(c.date, date))))
-            .sort((c1, c2) => c1 - c2
+            .sort((c1, c2) => c1.debut - c2.debut
             );
 
     if (socket !== null && !todolist.isEqual(newtodolist)) {
@@ -205,7 +203,7 @@ var nettoyageListe = function (socket = null) {
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
         writeList();
-}
+    }
 };
 
 // Chargement de la page index.html
@@ -259,7 +257,7 @@ io.sockets.on('connection', function (socket) {
     date.getHours(5);
     // #### à remettre schedule(date, newDayPurge);
     newDayPurge();
-    setInterval(nettoyageListe, 60 * 60 * 1000, socket);
+    setInterval(nettoyageListe, 60 * 1000, socket);
     readLfutur();
 
     // Edition de lfutur
