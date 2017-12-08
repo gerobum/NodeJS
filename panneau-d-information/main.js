@@ -23,29 +23,28 @@ var getLPerm = function(liste) {
 };
 
 var getLFutur = function(liste) {
-    return noDoublon(
-                                liste.filter(c => c.date !== null && c.date > new Date()),
-                                (c1, c2) => { 
-                                    if (c1.message < c2.message)
-                                        return -1;
-                                    else if (c1.message > c2.message)
-                                        return 1;
-                                    else if (c1.date < c2.date)
-                                        return -1;
-                                    else if (c1.date > c2.date)
-                                        return 1;
-                                    else if (c1.jour < c2.jour)
-                                        return -1;
-                                    else if (c1.jour > c2.jour)
-                                        return 1;
-                                    else if (c1.debut < c2.debut)
-                                        return -1;
-                                    else if (c1.debut > c2.debut)
-                                        return 1;
-                                    else 
-                                        return c1.fin - c2.fin ;
-                                }      
-                                );
+    return noDoublon(liste.filter(c => c.date !== null && c.date > new Date(),
+                        (c1, c2) => { 
+                            if (c1.message < c2.message)
+                                return -1;
+                            else if (c1.message > c2.message)
+                                return 1;
+                            else if (c1.date < c2.date)
+                                return -1;
+                            else if (c1.date > c2.date)
+                                return 1;
+                            else if (c1.jour < c2.jour)
+                                return -1;
+                            else if (c1.jour > c2.jour)
+                                return 1;
+                            else if (c1.debut < c2.debut)
+                                return -1;
+                            else if (c1.debut > c2.debut)
+                                return 1;
+                            else 
+                                return c1.fin - c2.fin ;
+                        })      
+                    );
 };
 
 var newDayPurge = function () {
@@ -61,9 +60,7 @@ var newDayPurge = function () {
                         console.log("Erreur de lecture du fichier lfutur lors de la purge");
                     } else {
                         try {
-                            var s = new Set(JSON.parse(data));
-                            s.append(liste);
-                            liste = s.toArray();
+                            liste = liste.concat(JSON.parse(data));
                                              
                             liste = datify(liste);
                       
@@ -85,20 +82,6 @@ var newDayPurge = function () {
             }
         }
     });
-};
-
-Set.prototype.append = function (s) {
-    for (let e of s) {
-        this.add(e);
-    }
-};
-
-Set.prototype.toArray = function () {
-    var r = [];
-    for (let e of this) {
-        r.push(e);
-    }
-    return r;
 };
 
 var readLperm = function () {
@@ -151,10 +134,9 @@ var writeFuturList = function (newlist) {
         } else {
             try {
                 futurlist = JSON.parse(data);
-                let s = new Set(futurlist);
-                s.append(newlist);
+                futurlist.concat(newlist);
 
-                fs.writeFile('lfutur', JSON.stringify(s.toArray()) + '\n', (err) => {
+                fs.writeFile('lfutur', JSON.stringify(futurlist) + '\n', (err) => {
                     if (err) {
                         console.log("Problème d'écriture dans le fichier lfutur");
                     }
@@ -324,10 +306,7 @@ io.sockets.on('connection', function (socket) {
         todolist = getLPerm(newtodolist);
         
         writeList();
-        writeFuturList(getLFutur(liste.filter(c =>
-            (c.date !== null && c.date > date) ||
-                    c.date === null
-        )));
+        writeFuturList(liste);
 
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});
