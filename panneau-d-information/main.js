@@ -16,10 +16,19 @@ var server = require('http').createServer(app),
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
 var getLPerm = function(liste) {
+    datify(liste);
+    console.log("dans getLPerm ");
+    console.log(liste);
+    var date = new Date();
     return noDoublon(
-                                liste.filter(c => c.date === null || sameday(c.date, new Date())), 
+                    liste
+                        .filter(c => c.date === null || sameday(c.date, date))
+                        .filter(c => c.fin.getHours() > date.getHours() || 
+                                    (c.fin.getHours() === date.getHours() && 
+                                     c.fin.getMinutes() > date.getMinutes())), 
                                 (c1, c2) => (c1.message < c2.message) ? -1 : ((c1.message > c2.message) ? 1 : 0)
-                            );
+                                
+                    );
 };
 
 var getLFutur = function(liste) {
@@ -233,14 +242,15 @@ var todolist = [];
 var futurlist = [];
 
 io.sockets.on('connection', function (socket) {
-
+    console.log("Connection --");
 // Lancement de la purge tous les jours à 5h05.
-    var date = new Date();
-    date.getHours(5);
-    // #### à remettre schedule(date, newDayPurge);
+    //var date = new Date();
+     //date.setHours(5);
+    //schedule(date, newDayPurge);
     newDayPurge();
     setInterval(nettoyageListe, 60 * 1000, socket);
     readLfutur();
+    readLperm();
 
     // Edition de lfutur
     socket.on('neweditlfutur', function (message) {
@@ -262,19 +272,22 @@ io.sockets.on('connection', function (socket) {
         socket.emit('updateeditlfutur', {todolist: futurlist});
     });
 
-    readLperm();
 
     // Traitement classique
     socket.on('new', function (message) {
+        readLfutur();
+        readLperm();
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
-    });
+    }); 
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
         var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
         var jour = tjour[new Date().getDay()];
         var date = new Date();
-        liste = datify(liste);
+        console.log("-------- Changement de la liste --------");
+        console.log(liste);
+        liste = datify(liste);  
         // La liste est filtrée et triée puis rangée dans newtodolist
         // Sont conservés pour "aujourd'hui", les messages :
         //    - sans date et sans jour
@@ -290,10 +303,11 @@ io.sockets.on('connection', function (socket) {
                 })
                 .sort(function (c1, c2) {
                     return c1.debut - c2.debut;
-                });
+                }); 
         // Les nouveaux éléments de la liste.
         // Indique les événements à générer pour supprimer les nouveaux messages.
-        newtodolist.forEach(a => {
+        // Plus vraiment nécessaire puisque nettoyageListe est lancé toutes les minutes.
+        /*newtodolist.forEach(a => {
             var i = 0;
             while (i < todolist.length && (todolist[i].message !== a.message)) {
                 ++i;
@@ -301,9 +315,11 @@ io.sockets.on('connection', function (socket) {
             if (i === todolist.length || (i < todolist.length && todolist[i].fin !== a.fin)) {
                 schedule(a.fin, nettoyageListe, 1, false, socket);
             }
-        });
+        });*/
 
         todolist = getLPerm(newtodolist);
+        console.log("getLPerm");
+        console.log(todolist) ;
         
         writeList();
         writeFuturList(liste);

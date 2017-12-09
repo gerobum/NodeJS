@@ -200,7 +200,6 @@
                 var message = document.getElementById("newtodo").value.trim();
                 var liste = [];
                 for (var e of document.getElementsByClassName("message")) {
-                    console.log("Dans send " + e.value);
                     liste.push(JSON.parse(e.value));
                 }
 
@@ -221,25 +220,19 @@
                     var hrf = new Date(
                             today.getFullYear(), 
                             today.getMonth(), 
-                            today.getDate(), 
+                            today.getDate(),
                             (document.getElementById("hfin").value), 
                             document.getElementById("mfin").value,0);
-                    console.log("Début indiqué : " + 
-                            document.getElementById("hdebut").value + 
-                            ":" +
-                            document.getElementById("mdebut").value);
-                    console.log("Fin indiquée : " + 
-                            document.getElementById("hfin").value + 
-                            ":" +
-                            document.getElementById("mfin").value);
-                    console.log("Heure début " + hrd);
-                    console.log("Heure fin " + hrf);
-                    console.log("Heure today " + today.getHours()+":"+today.getMinutes());
+
                     var cm = new ChronoMessage(date, document.getElementById("idjour").value, hrd, hrf, message);
-                    console.log("Que vaut CM " + cm.toVeryString());
+
                     liste.push(cm);
+
+
                 }
+
                 liste = datify(liste);
+
                 socket.emit('change_list', liste); // Transmet la liste au serveur
                 init();
                 return false;
