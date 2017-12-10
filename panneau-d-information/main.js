@@ -11,49 +11,96 @@ var server = require('http').createServer(app),
         schedule = require('./js/ChronoMessage').schedule,
         datify = require('./js/ChronoMessage').datify,
         sameday = require('./js/ChronoMessage').sameday,
+        todayAndAfter = require('./js/ChronoMessage').todayAndAfter,
+        expireLaterAnyDay = require('./js/ChronoMessage').expireLaterAnyDay,
+        forToday = require('./js/ChronoMessage').forToday,
         noDoublon = require('./js/ChronoMessage').noDoublon,
         printChronoliste = require('./js/ChronoMessage').printChronoliste,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
-var getLPerm = function(liste) {
+var getLPerm = function (liste) {
     datify(liste);
     console.log("dans getLPerm ");
     console.log(liste);
     var date = new Date();
     return noDoublon(
-                    liste
-                        .filter(c => c.date === null || sameday(c.date, date))
-                        .filter(c => c.fin.getHours() > date.getHours() || 
-                                    (c.fin.getHours() === date.getHours() && 
-                                     c.fin.getMinutes() > date.getMinutes())), 
-                                (c1, c2) => (c1.message < c2.message) ? -1 : ((c1.message > c2.message) ? 1 : 0)
-                                
-                    );
+            liste
+            .filter(c => c.date === null || sameday(c.date, date))
+            .filter(c => c.fin.getHours() > date.getHours() ||
+                        (c.fin.getHours() === date.getHours() &&
+                                c.fin.getMinutes() > date.getMinutes())),
+            (c1, c2) => (c1.message < c2.message) ? -1 : ((c1.message > c2.message) ? 1 : 0)
+
+    );
 };
 
-var getLFutur = function(liste) {
+/*
+ * Supprime les doublons d'une liste avant d'être enregistrée dans lperm.
+ * La condition d'égalité est tout simplement "tous les attributs égaux."
+ * @param {type} liste : La liste dont il faut éliminer les doublons
+ * @returns {type} liste : La liste sans doublon.
+ */
+var delDoublonForLperm = function (liste) {
+    return noDoublon(liste,
+            (c1, c2) => {
+        if (c1.message < c2.message)
+            return -1;
+        else if (c1.message > c2.message)
+            return 1;
+        else if (c1.date < c2.date)
+            return -1;
+        else if (c1.date > c2.date)
+            return 1;
+        else if (c1.jour < c2.jour)
+            return -1;
+        else if (c1.jour > c2.jour)
+            return 1;
+        else if (c1.debut < c2.debut)
+            return -1;
+        else if (c1.debut > c2.debut)
+            return 1;
+        else
+            return c1.fin - c2.fin;
+    });
+};
+
+/* Deux messages identiques dans la liste à afficher sont considérés comme 
+ * des doublons.
+ * @param {type} liste
+ * @returns {unresolved}
+ */
+var delDoublonForToday = function (liste) {
+    return noDoublon(
+            liste,
+            (c1, c2) => (c1.message < c2.message) ? -1 : ((c1.message > c2.message) ? 1 : 0)
+
+    );
+};
+
+
+var getLFutur = function (liste) {
     return noDoublon(liste.filter(c => c.date !== null && c.date > new Date(),
-                        (c1, c2) => { 
-                            if (c1.message < c2.message)
-                                return -1;
-                            else if (c1.message > c2.message)
-                                return 1;
-                            else if (c1.date < c2.date)
-                                return -1;
-                            else if (c1.date > c2.date)
-                                return 1;
-                            else if (c1.jour < c2.jour)
-                                return -1;
-                            else if (c1.jour > c2.jour)
-                                return 1;
-                            else if (c1.debut < c2.debut)
-                                return -1;
-                            else if (c1.debut > c2.debut)
-                                return 1;
-                            else 
-                                return c1.fin - c2.fin ;
-                        })      
-                    );
+            (c1, c2) => {
+        if (c1.message < c2.message)
+            return -1;
+        else if (c1.message > c2.message)
+            return 1;
+        else if (c1.date < c2.date)
+            return -1;
+        else if (c1.date > c2.date)
+            return 1;
+        else if (c1.jour < c2.jour)
+            return -1;
+        else if (c1.jour > c2.jour)
+            return 1;
+        else if (c1.debut < c2.debut)
+            return -1;
+        else if (c1.debut > c2.debut)
+            return 1;
+        else
+            return c1.fin - c2.fin;
+    })
+            );
 };
 
 var newDayPurge = function () {
@@ -70,17 +117,17 @@ var newDayPurge = function () {
                     } else {
                         try {
                             liste = liste.concat(JSON.parse(data));
-                                             
+
                             liste = datify(liste);
-                      
-                            writeList('lperm', 
-                                getLPerm(liste)
-                
-                            );
-                            
-                            writeList('lfutur', 
-                                getLFutur(liste)
-                            );
+
+                            writeList('lperm',
+                                    getLPerm(liste)
+
+                                    );
+
+                            writeList('lfutur',
+                                    getLFutur(liste)
+                                    );
                         } catch (e) {
                             console.log("Erreur de chargement de la liste dans newDayPurge 1 " + e);
                         }
@@ -109,16 +156,89 @@ var readLperm = function () {
     });
 };
 
-var readLfutur = function () {
-    fs.readFile('lfutur', 'utf8', (err, data) => {
+var readLperm = function () {
+    fs.readFile('lperm', 'utf8', (err, data) => {
         if (err) {
-            console.log("Erreur de lecture du fichier lfutur");
+            console.log("Erreur de lecture du fichier lperm");
         } else {
             try {
-                futurlist = JSON.parse(data);
-                futurlist = datify(futurlist);
+                todolist = JSON.parse(data);
+                todolist = datify(todolist);
+                nettoyageListe();
             } catch (e) {
-                console.log("Erreur de chargement de la liste dans readLfutur " + e);
+                console.log("Erreur de chargement de la liste dans readLperm" + e);
+            }
+        }
+    });
+};
+var readFileList = function (file = 'lperm') {
+    var list = [];
+    fs.readFile(file, 'utf8', (err, data) => {
+        if (err) {
+            console.log("Erreur de lecture du fichier " + file);
+        } else {
+            try {
+                list = JSON.parse(data);
+                list = datify(list);
+            } catch (e) {
+                console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
+            }
+        }
+    });
+    return list;
+};
+
+var nowMessages = function (list) {
+    return list
+            .filter(c => forToday(c))
+            .filter(c => expireLaterAnyDay(c))
+            .sort((c1, c2) => c1.debut - c2.debut);
+};
+
+var todayMessages = function (list) {
+    return list.filter(cm => sameday(cm, new Date()));
+};
+
+var delOldMessages = function (list) {
+    return list.filter(cm => todayAndAfter(cm));
+};
+
+var cleanListForLPerm = function (list) {
+    list = delDoublonForLperm(list);
+    list = delOldMessages(list);
+    return list;
+};
+
+var cleanListForNow = function (list) {
+    list = delDoublonForToday(list);
+    list = nowMessages(list);
+    return list;
+};
+
+var addListToLPerm = function (list) {
+    fs.readFile("lperm", 'utf8', (err, data) => {
+        if (err) {
+            fs.writeFile("lperm", JSON.stringify(list) + '\n', (err) => {
+                if (err) {
+                    console.log("Problème d'écriture dans le fichier lperm");
+                }
+            });
+        } else {
+            try {
+                list = list.concat(JSON.parse(data));
+                list = datify(list);
+                console.log("--- Dans addListToLPerm ---");
+                console.log(list);
+                list = cleanListForLPerm(list);
+                console.log("--- Après clean ---");
+                console.log(list);
+                fs.writeFile("lperm", JSON.stringify(list) + '\n', (err) => {
+                    if (err) {
+                        console.log("Problème d'écriture dans le fichier lperm");
+                    }
+                });
+            } catch (e) {
+                console.log("Erreur de chargement de la liste dans lperm " + e);
             }
         }
     });
@@ -167,26 +287,21 @@ Array.prototype.isEqual = function (b) {
     return true;
 };
 
-
+var readLFutur= function() {
+    
+};
 
 var nettoyageListe = function (socket = null) {
     var date = new Date();
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     var jour = tjour[new Date().getDay()];
     newtodolist = todolist
-            .filter(c => {
-                try {
-                    return date < c.fin;
-                } catch (e) {
-                    return true;
-                }
-            })
+            .filter(c => expireLaterAnyDay(c))
             .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                         (c.date === null && (c.hasOwnProperty("jour")
                                 && (c.jour === "Tous les jours" || c.jour === jour))) ||
                         (c.date !== null && sameday(c.date, date))))
-            .sort((c1, c2) => c1.debut - c2.debut
-            );
+            .sort((c1, c2) => c1.debut - c2.debut);
 
     if (socket !== null && !todolist.isEqual(newtodolist)) {
         todolist = newtodolist;
@@ -194,7 +309,7 @@ var nettoyageListe = function (socket = null) {
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
         writeList();
-    }
+}
 };
 
 // Chargement de la page index.html
@@ -245,11 +360,11 @@ io.sockets.on('connection', function (socket) {
     console.log("Connection --");
 // Lancement de la purge tous les jours à 5h05.
     //var date = new Date();
-     //date.setHours(5);
+    //date.setHours(5);
     //schedule(date, newDayPurge);
     newDayPurge();
     setInterval(nettoyageListe, 60 * 1000, socket);
-    readLfutur();
+    //readLfutur();
     readLperm();
 
     // Edition de lfutur
@@ -275,19 +390,24 @@ io.sockets.on('connection', function (socket) {
 
     // Traitement classique
     socket.on('new', function (message) {
-        readLfutur();
-        readLperm();
+        //readLfutur();
+        //readLperm();
+        let list = readFileList('lperm');
+        list = todolist.concat(list);
+        list = datify(list);
+        todolist = cleanListForNow(list);
+        
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
-    }); 
+    });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
-        var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+        /*var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
         var jour = tjour[new Date().getDay()];
         var date = new Date();
         console.log("-------- Changement de la liste --------");
         console.log(liste);
-        liste = datify(liste);  
+        liste = datify(liste);
         // La liste est filtrée et triée puis rangée dans newtodolist
         // Sont conservés pour "aujourd'hui", les messages :
         //    - sans date et sans jour
@@ -295,34 +415,39 @@ io.sockets.on('connection', function (socket) {
         //    - avec date et la date est aujourd'hui
         var newtodolist = liste
                 .filter(c => {
-                   
+
                     return ((c.date === null && !c.hasOwnProperty("jour")) ||
-                            (c.date === null && (c.hasOwnProperty("jour") && 
-                            (c.jour === "Tous les jours" || c.jour === jour))) ||
+                            (c.date === null && (c.hasOwnProperty("jour") &&
+                                    (c.jour === "Tous les jours" || c.jour === jour))) ||
                             (c.date !== null && sameday(c.date, date)));
                 })
                 .sort(function (c1, c2) {
                     return c1.debut - c2.debut;
-                }); 
+                });*/
         // Les nouveaux éléments de la liste.
         // Indique les événements à générer pour supprimer les nouveaux messages.
         // Plus vraiment nécessaire puisque nettoyageListe est lancé toutes les minutes.
         /*newtodolist.forEach(a => {
-            var i = 0;
-            while (i < todolist.length && (todolist[i].message !== a.message)) {
-                ++i;
-            }
-            if (i === todolist.length || (i < todolist.length && todolist[i].fin !== a.fin)) {
-                schedule(a.fin, nettoyageListe, 1, false, socket);
-            }
-        });*/
+         var i = 0;
+         while (i < todolist.length && (todolist[i].message !== a.message)) {
+         ++i;
+         }
+         if (i === todolist.length || (i < todolist.length && todolist[i].fin !== a.fin)) {
+         schedule(a.fin, nettoyageListe, 1, false, socket);
+         }
+         });*/
 
-        todolist = getLPerm(newtodolist);
+        /*todolist = getLPerm(newtodolist);
         console.log("getLPerm");
-        console.log(todolist) ;
-        
-        writeList();
-        writeFuturList(liste);
+        console.log(todolist);*/
+
+        // writeList();
+        console.log("Changement de la liste");
+        console.log(liste);
+        liste = datify(liste);
+        addListToLPerm(liste);
+        todolist = cleanListForNow(liste);
+        //writeFuturList(liste);
 
         socket.emit('update', {todolist: todolist});
         socket.broadcast.emit('update', {todolist: todolist});

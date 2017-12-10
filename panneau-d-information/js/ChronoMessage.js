@@ -52,6 +52,36 @@ var printChronoliste = function (msg, liste) {
         console.log(cm.toVeryString());
     }
 };
+var expireLaterAnyDay = function (cm) {
+    try {
+        return afterNowAnyDay(cm.fin);
+    } catch (err) {
+        return false;
+    }
+};
+var forToday = function (cm) {
+    var date = new Date();
+    var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+    var jour = tjour[new Date().getDay()];
+    try {
+        return ((cm.date === null && !cm.hasOwnProperty("jour")) ||
+                        (cm.date === null && (cm.hasOwnProperty("jour")
+                                && (cm.jour === "Tous les jours" || cm.jour === jour))) ||
+                        (cm.date !== null && sameday(cm.date, date)));
+    } catch (err) {
+        return false;
+    }
+};
+
+var afterNowAnyDay = function (d) {
+    var now = new Date();
+    try {
+        return d.getHours() > now.getHours() ||
+               (d.getHours() === now.getHours() && d.getMinutes() > now.getMinutes());
+    } catch (err) {
+        return false;
+    }
+};
 var sameday = function (d1, d2) {
     try {
         return d1.getDate() === d2.getDate() &&
@@ -59,6 +89,20 @@ var sameday = function (d1, d2) {
                 d1.getFullYear() === d2.getFullYear();
     } catch (err) {
         return false;
+    }
+};
+var todayAndAfter = function (cm) {
+    now = new Date();
+    try {
+        return (cm.date === null) ||
+               (cm.date.getFullYear() > now.getFullYear()) ||
+               (cm.date.getFullYear() === now.getFullYear() && 
+                 cm.date.getMonth() > now.getMonth()) || 
+               (cm.date.getFullYear() === now.getFullYear() && 
+                 cm.date.getMonth() === now.getMonth() &&
+                 cm.date.getDate() >= now.getDate());
+    } catch (err) {
+        return true;
     }
 };
 var noDoublon = function (liste, cmp = (x1, x2) => x1 - x2) {
@@ -75,8 +119,6 @@ var noDoublon = function (liste, cmp = (x1, x2) => x1 - x2) {
     return newliste;
 };
 var datify = function (liste) {    
-    console.log("-----------Début de datify-------------");
-    console.log(liste);
     var newliste = [];
     for (var e of liste) {
         var cm = new ChronoMessage(
@@ -89,7 +131,6 @@ var datify = function (liste) {
             newliste.push(cm);
         }
     }
-    console.log("-----------Fin de datify-------------");
     return newliste;
 };
 /*
@@ -137,6 +178,9 @@ try {
     exports.schedule = schedule;
     exports.datify = datify;
     exports.sameday = sameday;
+    exports.todayAndAfter = todayAndAfter;
+    exports.expireLaterAnyDay = expireLaterAnyDay;
+    exports.forToday = forToday;
     exports.printChronoliste = printChronoliste;
     exports.noDoublon = noDoublon;
 } catch (e) {
