@@ -18,19 +18,6 @@ var server = require('http').createServer(app),
         printChronoliste = require('./js/ChronoMessage').printChronoliste,
         urlencodedParser = bodyParser.urlencoded({extended: false});
 
-var getLPerm = function (liste) {
-    datify(liste);
-    var date = new Date();
-    return noDoublon(
-            liste
-            .filter(c => c.date === null || sameday(c.date, date))
-            .filter(c => c.fin.getHours() > date.getHours() ||
-                        (c.fin.getHours() === date.getHours() &&
-                                c.fin.getMinutes() > date.getMinutes())),
-            (c1, c2) => (c1.message < c2.message) ? -1 : ((c1.message > c2.message) ? 1 : 0)
-
-    );
-};
 
 /*
  * Supprime les doublons d'une liste avant d'être enregistrée dans lperm.
@@ -75,69 +62,6 @@ var delDoublonForToday = function (liste) {
     );
 };
 
-
-var getLFutur = function (liste) {
-    return noDoublon(liste.filter(c => c.date !== null && c.date > new Date(),
-            (c1, c2) => {
-        if (c1.message < c2.message)
-            return -1;
-        else if (c1.message > c2.message)
-            return 1;
-        else if (c1.date < c2.date)
-            return -1;
-        else if (c1.date > c2.date)
-            return 1;
-        else if (c1.jour < c2.jour)
-            return -1;
-        else if (c1.jour > c2.jour)
-            return 1;
-        else if (c1.debut < c2.debut)
-            return -1;
-        else if (c1.debut > c2.debut)
-            return 1;
-        else
-            return c1.fin - c2.fin;
-    })
-            );
-};
-
-var newDayPurge = function () {
-    var liste = [];
-    fs.readFile('lperm', 'utf8', (err, data) => {
-        if (err) {
-            console.log("Erreur de lecture du fichier lperm lors de la purge");
-        } else {
-            try {
-                liste = JSON.parse(data);
-                fs.readFile('lfutur', 'utf8', (err, data) => {
-                    if (err) {
-                        console.log("Erreur de lecture du fichier lfutur lors de la purge");
-                    } else {
-                        try {
-                            liste = liste.concat(JSON.parse(data));
-
-                            liste = datify(liste);
-
-                            writeList('lperm',
-                                    getLPerm(liste)
-
-                                    );
-
-                            writeList('lfutur',
-                                    getLFutur(liste)
-                                    );
-                        } catch (e) {
-                            console.log("Erreur de chargement de la liste dans newDayPurge 1 " + e);
-                        }
-                    }
-                });
-            } catch (e) {
-                console.log("Erreur de chargement de la liste dans newDayPurge 2" + e);
-            }
-        }
-    });
-};
-
 var readFileListAndSendToSocket = function (file = 'lperm', socket) {
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
@@ -162,10 +86,6 @@ var nowMessages = function (list) {
             .filter(c => forToday(c))
             .filter(c => expireLaterAnyDay(c))
             .sort((c1, c2) => c1.debut - c2.debut);
-};
-
-var todayMessages = function (list) {
-    return list.filter(cm => sameday(cm, new Date()));
 };
 
 var delOldMessages = function (list) {
@@ -324,11 +244,6 @@ app.use(session({secret: 'todotopsecret'}))
 var todolist = [];
 
 io.sockets.on('connection', function (socket) {
-// Lancement de la purge tous les jours à 5h05.
-    //var date = new Date();
-    //date.setHours(5);
-    //schedule(date, newDayPurge);
-    // newDayPurge();
     setInterval(nettoyageListe, 60 * 1000, socket);
 
     readFileListAndSendToSocket('lperm', socket);
