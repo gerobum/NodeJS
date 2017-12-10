@@ -137,39 +137,7 @@ var newDayPurge = function () {
         }
     });
 };
-/*
- var readLperm = function () {
- fs.readFile('lperm', 'utf8', (err, data) => {
- if (err) {
- console.log("Erreur de lecture du fichier lperm");
- } else {
- try {
- todolist = JSON.parse(data);
- todolist = datify(todolist);
- nettoyageListe();
- } catch (e) {
- console.log("Erreur de chargement de la liste dans readLperm" + e);
- }
- }
- });
- };
- 
- var readLperm = function () {
- fs.readFile('lperm', 'utf8', (err, data) => {
- if (err) {
- console.log("Erreur de lecture du fichier lperm");
- } else {
- try {
- todolist = JSON.parse(data);
- todolist = datify(todolist);
- nettoyageListe();
- } catch (e) {
- console.log("Erreur de chargement de la liste dans readLperm" + e);
- }
- }
- });
- };
- */
+
 var readFileListAndSendToSocket = function (file = 'lperm', socket) {
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
@@ -217,7 +185,6 @@ var cleanListForNow = function (list) {
 };
 
 var supMessageFromLPermAndSendToSocket = function (cm, socket) {
-    console.log("supMessageFromLPermAndSendToSocket");
     if (cm.date !== null) {
         fs.readFile("lperm", 'utf8', (err, data) => {
             if (err) {
@@ -291,9 +258,6 @@ Array.prototype.isEqual = function (b) {
     return true;
 };
 
-/*var readLFutur = function () {
- 
- };*/
 
 var nettoyageListe = function (socket = null) {
     var date = new Date();
@@ -369,27 +333,6 @@ io.sockets.on('connection', function (socket) {
 
     readFileListAndSendToSocket('lperm', socket);
 
-    // Edition de lfutur
-    /*socket.on('neweditlfutur', function (message) {
-     socket.emit('updateeditlfutur', {todolist: futurlist});
-     });*/
-    // Supprimer la tâche i
-    /*socket.on('sup_msglfutur', function (i) {
-     futurlist.splice(i, 1);
-     writeList('lfutur', futurlist);
-     socket.emit('updateeditlfutur', {todolist: futurlist});
-     });*/
-
-
-    // Une tâche a été ajoutée
-    /*socket.on('change_listlfutur', function (liste) {
-     
-     // futurlist = liste;
-     writeList('lfutur', futurlist);
-     socket.emit('updateeditlfutur', {todolist: futurlist});
-     });*/
-
-
     // Traitement classique
     socket.on('new', function (message) {
         readFileListAndSendToSocket('lperm', socket);
@@ -405,9 +348,6 @@ io.sockets.on('connection', function (socket) {
     // Supprimer la tâche i
     socket.on('sup_msg', function (i) {
         supMessageFromLPermAndSendToSocket(todolist[i], socket);
-        //todolist.splice(i, 1);
-        //console.log("Suppression");
-        //readFileListAndSendToSocket('lperm', socket);
     });
 });
 
