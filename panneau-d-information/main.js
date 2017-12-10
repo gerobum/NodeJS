@@ -137,53 +137,53 @@ var newDayPurge = function () {
         }
     });
 };
-
-var readLperm = function () {
-    fs.readFile('lperm', 'utf8', (err, data) => {
-        if (err) {
-            console.log("Erreur de lecture du fichier lperm");
-        } else {
-            try {
-                todolist = JSON.parse(data);
-                todolist = datify(todolist);
-                nettoyageListe();
-            } catch (e) {
-                console.log("Erreur de chargement de la liste dans readLperm" + e);
-            }
-        }
-    });
-};
-
-var readLperm = function () {
-    fs.readFile('lperm', 'utf8', (err, data) => {
-        if (err) {
-            console.log("Erreur de lecture du fichier lperm");
-        } else {
-            try {
-                todolist = JSON.parse(data);
-                todolist = datify(todolist);
-                nettoyageListe();
-            } catch (e) {
-                console.log("Erreur de chargement de la liste dans readLperm" + e);
-            }
-        }
-    });
-};
-
+/*
+ var readLperm = function () {
+ fs.readFile('lperm', 'utf8', (err, data) => {
+ if (err) {
+ console.log("Erreur de lecture du fichier lperm");
+ } else {
+ try {
+ todolist = JSON.parse(data);
+ todolist = datify(todolist);
+ nettoyageListe();
+ } catch (e) {
+ console.log("Erreur de chargement de la liste dans readLperm" + e);
+ }
+ }
+ });
+ };
+ 
+ var readLperm = function () {
+ fs.readFile('lperm', 'utf8', (err, data) => {
+ if (err) {
+ console.log("Erreur de lecture du fichier lperm");
+ } else {
+ try {
+ todolist = JSON.parse(data);
+ todolist = datify(todolist);
+ nettoyageListe();
+ } catch (e) {
+ console.log("Erreur de chargement de la liste dans readLperm" + e);
+ }
+ }
+ });
+ };
+ */
 var readFileListAndSendToSocket = function (file = 'lperm', socket) {
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier " + file);
         } else {
             try {
-                list = datify(JSON.parse(data));                
+                list = datify(JSON.parse(data));
                 list = todolist.concat(list);
                 list = datify(list);
                 todolist = cleanListForNow(list);
             } catch (e) {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
             }
-        }        
+        }
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
     });
@@ -214,6 +214,37 @@ var cleanListForNow = function (list) {
     list = delDoublonForToday(list);
     list = nowMessages(list);
     return list;
+};
+
+var supMessageFromLPermAndSendToSocket = function (cm, socket) {
+    console.log("supMessageFromLPermAndSendToSocket");
+    if (cm.date !== null) {
+        fs.readFile("lperm", 'utf8', (err, data) => {
+            if (err) {
+                fs.writeFile("lperm", JSON.stringify(list) + '\n', (err) => {
+                    if (err) {
+                        console.log("Problème d'écriture dans le fichier lperm");
+                    }
+                });
+            } else {
+                try {
+                    var list = datify(JSON.parse(data));
+                    todolist = list.filter(cmcrt => JSON.stringify(cmcrt) !== JSON.stringify(cm));
+                    
+                    fs.writeFile("lperm", JSON.stringify(todolist) + '\n', (err) => {
+                        if (err) {
+                            console.log("Problème d'écriture dans le fichier lperm");
+                        }
+                    });
+                } catch (e) {
+                    console.log("Erreur de chargement de la liste dans lperm " + e);
+                }
+            }
+
+            socket.broadcast.emit('update', {todolist: todolist});
+            socket.emit('update', {todolist: todolist});
+        });
+    }
 };
 
 var addListToLPerm = function (list) {
@@ -260,9 +291,9 @@ Array.prototype.isEqual = function (b) {
     return true;
 };
 
-var readLFutur= function() {
-    
-};
+/*var readLFutur = function () {
+ 
+ };*/
 
 var nettoyageListe = function (socket = null) {
     var date = new Date();
@@ -327,7 +358,6 @@ app.use(session({secret: 'todotopsecret'}))
         });
 
 var todolist = [];
-var futurlist = [];
 
 io.sockets.on('connection', function (socket) {
 // Lancement de la purge tous les jours à 5h05.
@@ -336,42 +366,33 @@ io.sockets.on('connection', function (socket) {
     //schedule(date, newDayPurge);
     // newDayPurge();
     setInterval(nettoyageListe, 60 * 1000, socket);
-    /*let list = readFileList('lperm');
-    list = todolist.concat(list);
-    list = datify(list);
-    todolist = cleanListForNow(list);*/
-    //readLperm();
+
     readFileListAndSendToSocket('lperm', socket);
 
     // Edition de lfutur
-    socket.on('neweditlfutur', function (message) {
-        socket.emit('updateeditlfutur', {todolist: futurlist});
-    });
+    /*socket.on('neweditlfutur', function (message) {
+     socket.emit('updateeditlfutur', {todolist: futurlist});
+     });*/
     // Supprimer la tâche i
-    socket.on('sup_msglfutur', function (i) {
-        futurlist.splice(i, 1);
-        writeList('lfutur', futurlist);
-        socket.emit('updateeditlfutur', {todolist: futurlist});
-    });
+    /*socket.on('sup_msglfutur', function (i) {
+     futurlist.splice(i, 1);
+     writeList('lfutur', futurlist);
+     socket.emit('updateeditlfutur', {todolist: futurlist});
+     });*/
 
 
     // Une tâche a été ajoutée
-    socket.on('change_listlfutur', function (liste) {
-
-        futurlist = liste;
-        writeList('lfutur', futurlist);
-        socket.emit('updateeditlfutur', {todolist: futurlist});
-    });
+    /*socket.on('change_listlfutur', function (liste) {
+     
+     // futurlist = liste;
+     writeList('lfutur', futurlist);
+     socket.emit('updateeditlfutur', {todolist: futurlist});
+     });*/
 
 
     // Traitement classique
     socket.on('new', function (message) {
-        //readLfutur();
-        //readLperm();
         readFileListAndSendToSocket('lperm', socket);
-        
-        //socket.broadcast.emit('update', {todolist: todolist});
-        //socket.emit('update', {todolist: todolist});
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
@@ -379,15 +400,14 @@ io.sockets.on('connection', function (socket) {
         addListToLPerm(liste);
         todolist = todolist.concat(liste);
         todolist = cleanListForNow(todolist);
-
-        socket.emit('update', {todolist: todolist});
-        socket.broadcast.emit('update', {todolist: todolist});
+        readFileListAndSendToSocket('lperm', socket);
     });
     // Supprimer la tâche i
     socket.on('sup_msg', function (i) {
-        todolist.splice(i, 1);
-        socket.emit('update', {todolist: todolist});
-        socket.broadcast.emit('update', {todolist: todolist});
+        supMessageFromLPermAndSendToSocket(todolist[i], socket);
+        //todolist.splice(i, 1);
+        //console.log("Suppression");
+        //readFileListAndSendToSocket('lperm', socket);
     });
 });
 
