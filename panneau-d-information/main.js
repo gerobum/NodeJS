@@ -169,21 +169,24 @@ var readLperm = function () {
         }
     });
 };
-var readFileList = function (file = 'lperm') {
-    var list = [];
+
+var readFileListAndSendToSocket = function (file = 'lperm', socket) {
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier " + file);
         } else {
             try {
-                list = JSON.parse(data);
+                list = datify(JSON.parse(data));                
+                list = todolist.concat(list);
                 list = datify(list);
+                todolist = cleanListForNow(list);
             } catch (e) {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
             }
-        }
+        }        
+        socket.broadcast.emit('update', {todolist: todolist});
+        socket.emit('update', {todolist: todolist});
     });
-    return list;
 };
 
 var nowMessages = function (list) {
@@ -246,30 +249,6 @@ var writeList = function (file = 'lperm', list = todolist) {
     });
 };
 
-var writeFuturList = function (newlist) {
-    fs.readFile('lfutur', 'utf8', (err, data) => {
-        if (err) {
-            fs.writeFile('lfutur', JSON.stringify(newlist) + '\n', (err) => {
-                if (err) {
-                    console.log("Problème d'écriture dans le fichier lfutur");
-                }
-            });
-        } else {
-            try {
-                futurlist = JSON.parse(data);
-                futurlist.concat(newlist);
-
-                fs.writeFile('lfutur', JSON.stringify(futurlist) + '\n', (err) => {
-                    if (err) {
-                        console.log("Problème d'écriture dans le fichier lfutur");
-                    }
-                });
-            } catch (e) {
-                console.log("Erreur de chargement de la liste dans writeFuturList " + e);
-            }
-        }
-    });
-};
 
 Array.prototype.isEqual = function (b) {
     if (this.length !== b.length)
@@ -357,8 +336,12 @@ io.sockets.on('connection', function (socket) {
     //schedule(date, newDayPurge);
     // newDayPurge();
     setInterval(nettoyageListe, 60 * 1000, socket);
-    //readLfutur();
-    readLperm();
+    /*let list = readFileList('lperm');
+    list = todolist.concat(list);
+    list = datify(list);
+    todolist = cleanListForNow(list);*/
+    //readLperm();
+    readFileListAndSendToSocket('lperm', socket);
 
     // Edition de lfutur
     socket.on('neweditlfutur', function (message) {
@@ -385,13 +368,10 @@ io.sockets.on('connection', function (socket) {
     socket.on('new', function (message) {
         //readLfutur();
         //readLperm();
-        let list = readFileList('lperm');
-        list = todolist.concat(list);
-        list = datify(list);
-        todolist = cleanListForNow(list);
+        readFileListAndSendToSocket('lperm', socket);
         
-        socket.broadcast.emit('update', {todolist: todolist});
-        socket.emit('update', {todolist: todolist});
+        //socket.broadcast.emit('update', {todolist: todolist});
+        //socket.emit('update', {todolist: todolist});
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
