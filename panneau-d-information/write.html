@@ -274,32 +274,10 @@
                 }
             }
         </script>
-
-
-        <script>
-            function horloge(doc) {
-                var mois = ["janvier", "février", "mars", "avril", "mai", "juin",
-                    "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-
-                var hm = doc.getElementById("div_horloge");
-                var d = doc.getElementById("div_date");
-                var date = new Date();
-                var str = date.getHours();
-                str += ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
-                str += ':' + (date.getSeconds() < 10 ? '0' : '') + date.getSeconds();
-
-                hm.innerHTML = str;
-
-                str = "";
-
-                str += date.getDate() + " ";
-                str += mois[date.getMonth()] + " ";
-                str += date.getFullYear();
-
-                d.innerHTML = str;
-
-            }
-        </script>
+        
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="./js/ChronoMessage.js"></script>
+        <script src="./js/hostname.js"></script>
         <script>
             //window.onload = function () {
             horloge(document);
@@ -361,9 +339,6 @@
             window.addEventListener("unload", unloadHandlers, false);
         </script>
 
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="./js/ChronoMessage.js"></script>
-        <script src="./js/hostname.js"></script>
 
         <script>
             // Connexion à socket.io

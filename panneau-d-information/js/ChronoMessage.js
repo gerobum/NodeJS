@@ -65,9 +65,9 @@ var forToday = function (cm) {
     var jour = tjour[new Date().getDay()];
     try {
         return ((cm.date === null && !cm.hasOwnProperty("jour")) ||
-                        (cm.date === null && (cm.hasOwnProperty("jour")
-                                && (cm.jour === "Tous les jours" || cm.jour === jour))) ||
-                        (cm.date !== null && sameday(cm.date, date)));
+                (cm.date === null && (cm.hasOwnProperty("jour")
+                        && (cm.jour === "Tous les jours" || cm.jour === jour))) ||
+                (cm.date !== null && sameday(cm.date, date)));
     } catch (err) {
         return false;
     }
@@ -77,7 +77,7 @@ var afterNowAnyDay = function (d) {
     var now = new Date();
     try {
         return d.getHours() > now.getHours() ||
-               (d.getHours() === now.getHours() && d.getMinutes() > now.getMinutes());
+                (d.getHours() === now.getHours() && d.getMinutes() > now.getMinutes());
     } catch (err) {
         return false;
     }
@@ -95,12 +95,12 @@ var todayAndAfter = function (cm) {
     now = new Date();
     try {
         return (cm.date === null) ||
-               (cm.date.getFullYear() > now.getFullYear()) ||
-               (cm.date.getFullYear() === now.getFullYear() && 
-                 cm.date.getMonth() > now.getMonth()) || 
-               (cm.date.getFullYear() === now.getFullYear() && 
-                 cm.date.getMonth() === now.getMonth() &&
-                 cm.date.getDate() >= now.getDate());
+                (cm.date.getFullYear() > now.getFullYear()) ||
+                (cm.date.getFullYear() === now.getFullYear() &&
+                        cm.date.getMonth() > now.getMonth()) ||
+                (cm.date.getFullYear() === now.getFullYear() &&
+                        cm.date.getMonth() === now.getMonth() &&
+                        cm.date.getDate() >= now.getDate());
     } catch (err) {
         return true;
     }
@@ -118,7 +118,7 @@ var noDoublon = function (liste, cmp = (x1, x2) => x1 - x2) {
     }
     return newliste;
 };
-var datify = function (liste) {    
+var datify = function (liste) {
     var newliste = [];
     for (var e of liste) {
         var cm = new ChronoMessage(
@@ -186,3 +186,31 @@ try {
 } catch (e) {
     console.log(e);
 }
+
+/*
+ * Appeleé toutes les secondes dans read.html et write.html 
+ * pour afficher la date et heure
+ */
+var horloge = function (document) {
+    var mois = ["janvier", "février", "mars", "avril", "mai", "juin",
+        "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+    var jour = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+
+    var hm = document.getElementById("div_horloge");
+    var d = document.getElementById("div_date");
+    var date = new Date();
+    var str = date.getHours();
+    str += ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+    str += ':' + (date.getSeconds() < 10 ? '0' : '') + date.getSeconds();
+
+    hm.innerHTML = str;
+
+    str = "";
+    str += jour[date.getDay()] + " ";
+    str += date.getDate() + " ";
+    str += mois[date.getMonth()] + " ";
+    str += date.getFullYear();
+
+    d.innerHTML = str;
+
+};
