@@ -321,23 +321,32 @@
 
         <script src="/socket.io/socket.io.js"></script>
         <script src="./js/ChronoMessage.js"></script>
+        <script>
+            function emptyAndFill(liste) {            
+                $('#zone_msg').empty();
+                for (var i in liste) {
+                    $('#zone_msg').append(one_msg(i, JSON.stringify(liste[i])));
+                }
+            }
+        </script>
 
         <script>
             // Connexion à socket.io
             var socket = io.connect('http://' + hostname + ':8080');
-
+            var liste = [];
             document.title = 'Édition de "lfutur" dans Bonjour Maman';
             socket.emit('neweditlfutur', '');
 
             // Demande de mise à jour
             socket.on('updateeditlfutur', function (data) {
-                $('#zone_msg').empty();
-                for (var i in data.todolist) {
-                    $('#zone_msg').append(one_msg(i, JSON.stringify(data.todolist[i])));
-                }
+                liste = data.todolist;
+                emptyAndFill(liste);
             });
             function sup(i) {
-                socket.emit('sup_msglfutur', i);
+                console.log("Supprimer " + i);
+                console.log(liste.splice(i, 1));
+                //liste = liste.slice(i, 1);
+                emptyAndFill(liste);
             }
         </script>
     </body>

@@ -61,7 +61,7 @@ var delDoublonForToday = function (liste) {
 
     );
 };
-var readFileListAndSendToSocket = function (file = 'lperm', socket) {
+var readFileListAndSendToSocket = function (socket, file = 'lperm') {
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier " + file);
@@ -74,11 +74,12 @@ var readFileListAndSendToSocket = function (file = 'lperm', socket) {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
             }
         }
-        socket.emit('update', {todolist: list});
+        socket.emit('updateeditlfutur', {todolist: list});
     });
 };
 
-var readFileListForTodayAndSendToSocket = function (file = 'lperm', socket) {
+var readFileListForTodayAndSendToSocket = function (socket, file = 'lperm') {
+    console.log("readFileListForTodayAndSendToSocket lancé à " + new Date());
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier " + file);
@@ -255,16 +256,22 @@ app.use(session({secret: 'todotopsecret'}))
 var todolist = [];
 
 io.sockets.on('connection', function (socket) {
+    console.log("connection--");
     // Toutes les minutes la liste est nettoyée
     setInterval(nettoyageListe, 60 * 1000, socket);
     // Toutes les heures le fichier lperm est nettoyé
     setInterval(addListToLPerm, 60 * 60 * 1000);
-
-    readFileListForTodayAndSendToSocket('lperm', socket);
+    // (next, afunction, n = null, retro = true, arg = null)
+    UneHeure = new Date(); 
+    UneHeure.setHours(1);
+    UneHeure.setMinutes(00);
+    console.log(UneHeure);
+    //schedule(UneHeure, readFileListForTodayAndSendToSocket, socket, null, true);
+    setInterval(readFileListForTodayAndSendToSocket, 60*1000, socket);
 
     // Traitement classique
     socket.on('new', function (message) {
-        readFileListForTodayAndSendToSocket('lperm', socket);
+        readFileListForTodayAndSendToSocket(socket, 'lperm');
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
@@ -272,15 +279,17 @@ io.sockets.on('connection', function (socket) {
         addListToLPerm(liste);
         todolist = todolist.concat(liste);
         todolist = cleanListForNow(todolist);
-        readFileListForTodayAndSendToSocket('lperm', socket);
+        readFileListForTodayAndSendToSocket(socket, 'lperm');
     });
     // Supprimer la tâche i
     socket.on('sup_msg', function (i) {
         supMessageFromLPermAndSendToSocket(todolist[i], socket);
     });
     socket.on('neweditlfutur', function () {
-        console.log("--- modification lfutur ---");
-        readFileListAndSendToSocket('lperm', socket);
+        readFileListAndSendToSocket(socket, 'lperm');
+    });
+    socket.on('change_listlfutur', function (liste) {
+        writeList('lperm', delDoublonForLperm(liste));
     });
 });
 

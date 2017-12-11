@@ -133,6 +133,10 @@ var datify = function (liste) {
     }
     return newliste;
 };
+
+function test(quoi, qui = "Yvan") {
+    console.log(quoi + " " + qui);
+}
 /*
  * Execute a function everyday at hnext if n == 0
  *                   or n days at hnext if n > 0
@@ -143,8 +147,11 @@ var datify = function (liste) {
  * @param {type} n
  * @returns {undefined}
  */
-var schedule = function (next, afunction, n = null, retro = true, arg = null) {
-    var now = new Date(Date.UTC(next.getFullYear()), next.getMonth(), next.getDate());
+var schedule = function (next, afunction, arg = null, n = null, retro = true) {
+    //var now = new Date(Date.UTC(next.getFullYear()), next.getMonth(), next.getDate());
+    var now = new Date();
+    var demain = new Date(now.getTime()+(1000*60*60*24));
+    console.log("SCHEDULE = " + (now - next));
     var timeout;
     if (now < next) {
         timeout = next - now;
@@ -157,12 +164,12 @@ var schedule = function (next, afunction, n = null, retro = true, arg = null) {
     if (n === null) {
         setTimeout(() => {
             afunction(arg);
-            schedule(next, afunction, null, retro, arg);
+            schedule(demain, afunction, null, retro, arg);
         }, timeout);
     } else if (n > 0) {
         setTimeout(() => {
             afunction(arg);
-            schedule(next, afunction, n - 1, retro, arg);
+            schedule(demain, afunction, n - 1, retro, arg);
         }, timeout);
 }
 };
@@ -182,6 +189,7 @@ try {
     exports.expireLaterAnyDay = expireLaterAnyDay;
     exports.forToday = forToday;
     exports.printChronoliste = printChronoliste;
+    exports.test = test;
     exports.noDoublon = noDoublon;
 } catch (e) {
     console.log(e);
