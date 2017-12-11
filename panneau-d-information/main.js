@@ -134,14 +134,10 @@ var supMessageFromLPermAndSendToSocket = function (cm, socket) {
     }
 };
 
-var addListToLPerm = function (list) {
+var addListToLPerm = function (list = []) {
     fs.readFile("lperm", 'utf8', (err, data) => {
         if (err) {
-            fs.writeFile("lperm", JSON.stringify(list) + '\n', (err) => {
-                if (err) {
-                    console.log("Problème d'écriture dans le fichier lperm");
-                }
-            });
+            console.log("Problème de lecture du fichier lperm");
         } else {
             try {
                 list = list.concat(JSON.parse(data));
@@ -243,7 +239,10 @@ app.use(session({secret: 'todotopsecret'}))
 var todolist = [];
 
 io.sockets.on('connection', function (socket) {
+    // Toutes les minutes la liste est nettoyée
     setInterval(nettoyageListe, 60 * 1000, socket);
+    // Toutes les heures le fichier lperm est nettoyé
+    setInterval(addListToLPerm, 60 * 60 * 1000);
 
     readFileListAndSendToSocket('lperm', socket);
 
