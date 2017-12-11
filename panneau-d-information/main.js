@@ -183,7 +183,7 @@ var nettoyageListe = function (socket = null) {
     var date = new Date();
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     var jour = tjour[new Date().getDay()];
-    newtodolist = todolist
+    var newtodolist = todolist
             .filter(c => expireLaterAnyDay(c))
             .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                         (c.date === null && (c.hasOwnProperty("jour")
@@ -196,8 +196,7 @@ var nettoyageListe = function (socket = null) {
         newtodolist = null;
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
-        writeList();
-}
+    }
 };
 
 // Chargement de la page index.html
