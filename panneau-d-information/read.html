@@ -78,6 +78,12 @@
         </script>
 
         <script src="./js/ChronoMessage.js"></script>
+        <!-- 
+        Permet de paramétrer la variable localhost
+        Le fichier "./js/hostname.js" est dans .gitignore.
+        Il définit localement la variable hostname
+        -->
+        <script src="./js/hostname.js"></script>
         
         <script>
             window.onload = function () {
@@ -85,12 +91,8 @@
                 setInterval(horloge, 1000, document);
             };
         </script>
-        <script src="./js/ChronoMessage.js"></script>
-        <script src="./js/hostname.js"></script>
         <script>
             // Connexion à socket.io
-            //var socket = io.connect('http://192.168.1.56:8080');
-            //var socket = io.connect('http://localhost:8080');
             var socket = io.connect('http://' + hostname + ':8080');
 
             document.title = "Bonjour Maman";

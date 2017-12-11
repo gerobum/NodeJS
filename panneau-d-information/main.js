@@ -61,8 +61,24 @@ var delDoublonForToday = function (liste) {
 
     );
 };
-
 var readFileListAndSendToSocket = function (file = 'lperm', socket) {
+    fs.readFile(file, 'utf8', (err, data) => {
+        if (err) {
+            console.log("Erreur de lecture du fichier " + file);
+        } else {
+            try {
+                list = datify(JSON.parse(data));
+                list = todolist.concat(list);
+                list = datify(list);
+            } catch (e) {
+                console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
+            }
+        }
+        socket.emit('update', {todolist: list});
+    });
+};
+
+var readFileListForTodayAndSendToSocket = function (file = 'lperm', socket) {
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier " + file);
@@ -244,11 +260,11 @@ io.sockets.on('connection', function (socket) {
     // Toutes les heures le fichier lperm est nettoyé
     setInterval(addListToLPerm, 60 * 60 * 1000);
 
-    readFileListAndSendToSocket('lperm', socket);
+    readFileListForTodayAndSendToSocket('lperm', socket);
 
     // Traitement classique
     socket.on('new', function (message) {
-        readFileListAndSendToSocket('lperm', socket);
+        readFileListForTodayAndSendToSocket('lperm', socket);
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
@@ -256,11 +272,15 @@ io.sockets.on('connection', function (socket) {
         addListToLPerm(liste);
         todolist = todolist.concat(liste);
         todolist = cleanListForNow(todolist);
-        readFileListAndSendToSocket('lperm', socket);
+        readFileListForTodayAndSendToSocket('lperm', socket);
     });
     // Supprimer la tâche i
     socket.on('sup_msg', function (i) {
         supMessageFromLPermAndSendToSocket(todolist[i], socket);
+    });
+    socket.on('neweditlfutur', function () {
+        console.log("--- modification lfutur ---");
+        readFileListAndSendToSocket('lperm', socket);
     });
 });
 

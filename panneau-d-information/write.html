@@ -211,18 +211,18 @@
                     }
                     var today = new Date();
                     var hrd = new Date(
-                            today.getFullYear(), 
-                            today.getMonth(), 
-                            today.getDate(), 
-                            (document.getElementById("hdebut").value), 
-                            document.getElementById("mdebut").value, 0);
-     
-                    var hrf = new Date(
-                            today.getFullYear(), 
-                            today.getMonth(), 
+                            today.getFullYear(),
+                            today.getMonth(),
                             today.getDate(),
-                            (document.getElementById("hfin").value), 
-                            document.getElementById("mfin").value,0);
+                            (document.getElementById("hdebut").value),
+                            document.getElementById("mdebut").value, 0);
+
+                    var hrf = new Date(
+                            today.getFullYear(),
+                            today.getMonth(),
+                            today.getDate(),
+                            (document.getElementById("hfin").value),
+                            document.getElementById("mfin").value, 0);
 
                     var cm = new ChronoMessage(date, document.getElementById("idjour").value, hrd, hrf, message);
 
@@ -274,15 +274,20 @@
                 }
             }
         </script>
-        
+
         <script src="/socket.io/socket.io.js"></script>
         <script src="./js/ChronoMessage.js"></script>
+        <!-- 
+        Permet de paramétrer la variable localhost
+        Le fichier "./js/hostname.js" est dans .gitignore.
+        Il définit localement la variable hostname
+        -->
         <script src="./js/hostname.js"></script>
         <script>
-            //window.onload = function () {
-            horloge(document);
-            setInterval(horloge, 1000, document);
-            //};
+            window.onload = function () {
+                horloge(document);
+                setInterval(horloge, 1000, document);
+            };
         </script>
         <script>
             $(function () {

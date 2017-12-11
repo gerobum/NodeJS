@@ -253,41 +253,22 @@
         </script>
 
 
+        <script src="./js/ChronoMessage.js"></script>
+        <!-- 
+        Permet de paramétrer la variable localhost
+        Le fichier "./js/hostname.js" est dans .gitignore.
+        Il définit localement la variable hostname
+        -->
+        <script src="./js/hostname.js"></script>
+
+
         <script>
-            function horloge(doc) {
-                var mois = ["janvier", "février", "mars", "avril", "mai", "juin",
-                    "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
-
-                var hm = doc.getElementById("div_horloge");
-                var d = doc.getElementById("div_date");
-                var date = new Date();
-                var str = date.getHours();
-                str += ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
-                str += ':' + (date.getSeconds() < 10 ? '0' : '') + date.getSeconds();
-
-                hm.innerHTML = str;
-
-                str = "";
-
-                str += date.getDate() + " ";
-                str += mois[date.getMonth()] + " ";
-                str += date.getFullYear();
-
-                d.innerHTML = str;
-
-            }
+            window.onload = function () {
+                horloge(document);
+                setInterval(horloge, 1000, document);
+            };
         </script>
-        <script>
-            //window.onload = function () {
-            horloge(document);
-            setInterval(horloge, 1000, document);
-            //};
-        </script>
-        <!--<script>
-            $(function () {
-                $("#datepicker").datepicker();
-            });
-        </script>-->
+
         <script>
 
             var init = function () {
@@ -340,13 +321,10 @@
 
         <script src="/socket.io/socket.io.js"></script>
         <script src="./js/ChronoMessage.js"></script>
-        <script src="./js/hostname.js"></script>
 
         <script>
             // Connexion à socket.io
-            //var socket = io.connect('http://192.168.1.56:8080');
-            var socket = io.connect('http://'+hostname+':8080');
-            //var socket = io.connect('http://localhost:8080');
+            var socket = io.connect('http://' + hostname + ':8080');
 
             document.title = 'Édition de "lfutur" dans Bonjour Maman';
             socket.emit('neweditlfutur', '');
