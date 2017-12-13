@@ -79,14 +79,13 @@ var readFileListAndSendToSocket = function (socket, file = 'lperm') {
 };
 
 var readFileListForTodayAndSendToSocket = function (socket, file = 'lperm') {
-    console.log("readFileListForTodayAndSendToSocket lancé à " + new Date());
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier " + file);
         } else {
             try {
                 list = datify(JSON.parse(data));
-                list = todolist.concat(list);
+                //list = todolist.concat(list);
                 list = datify(list);
                 todolist = cleanListForNow(list);
             } catch (e) {
@@ -256,7 +255,6 @@ app.use(session({secret: 'todotopsecret'}))
 var todolist = [];
 
 io.sockets.on('connection', function (socket) {
-    console.log("connection--");
     // Toutes les minutes la liste est nettoyée
     setInterval(nettoyageListe, 60 * 1000, socket);
     // Toutes les heures le fichier lperm est nettoyé
@@ -267,7 +265,7 @@ io.sockets.on('connection', function (socket) {
     UneHeure.setMinutes(00);
     console.log(UneHeure);
     //schedule(UneHeure, readFileListForTodayAndSendToSocket, socket, null, true);
-    setInterval(readFileListForTodayAndSendToSocket, 60*1000, socket);
+    setInterval(readFileListForTodayAndSendToSocket, 60*60*1000, socket);
 
     // Traitement classique
     socket.on('new', function (message) {
