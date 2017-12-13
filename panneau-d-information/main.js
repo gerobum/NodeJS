@@ -68,7 +68,6 @@ var readFileListAndSendToSocket = function (socket, file = 'lperm') {
         } else {
             try {
                 list = datify(JSON.parse(data));
-                list = todolist.concat(list);
                 list = datify(list);
             } catch (e) {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
