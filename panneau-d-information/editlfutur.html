@@ -46,6 +46,9 @@
                 border-style: inset;
                 padding: 0.5%;
             }
+            textarea{
+                width:95%;
+            }
         </style>
         <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
         <link rel="stylesheet" href="/resources/demos/style.css">
@@ -194,7 +197,7 @@
                 var message = document.getElementById("newtodo").value.trim();
                 var liste = [];
                 for (var e of document.getElementsByClassName("message")) {
-                    liste.push(JSON.parse(e.value))
+                    liste.push(JSON.parse(e.value));
                 }
 
                 if (message !== "") {
@@ -203,13 +206,29 @@
                         date.setHours(23);
                         date.setMinutes(59);
                     }
+                    var today = new Date();
+                    var hrd = new Date(
+                            today.getFullYear(),
+                            today.getMonth(),
+                            today.getDate(),
+                            (document.getElementById("hdebut").value),
+                            document.getElementById("mdebut").value, 0);
 
-                    var hrd = {h: document.getElementById("hdebut").value, m: document.getElementById("mdebut").value};
-                    var hrf = {h: document.getElementById("hfin").value, m: document.getElementById("mfin").value};
-                    var cm = {date: date, jour: document.getElementById("idjour").value, debut: hrd, fin: hrf, message: message};
+                    var hrf = new Date(
+                            today.getFullYear(),
+                            today.getMonth(),
+                            today.getDate(),
+                            (document.getElementById("hfin").value),
+                            document.getElementById("mfin").value, 0);
+
+                    var cm = new ChronoMessage(date, document.getElementById("idjour").value, hrd, hrf, message);
 
                     liste.push(cm);
+
+
                 }
+
+                liste = datify(liste);
                 socket.emit('change_listlfutur', liste); // Transmet la liste au serveur
                 init();
                 return false;
@@ -222,7 +241,8 @@
                     classe = "impair";
                 }
                 //return "<p class=\"liste " + classe + "\"><span class=\"cliquable\" onclick=\"up(" + i + ")\"> (↑) </span><span class=\"cliquable\" onclick=\"down(" + i + ")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup(" + i + ")\"> (✘) </span><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";            
-                return "<p class=\"liste " + classe + "\"><button class=\"cliquable\" onclick=\"sup(" + i + ")\"> ✘ </button><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";
+                //  cols=\"150\" rows=\"2\"
+                return "<p class=\"liste " + classe + "\"><button class=\"cliquable\" onclick=\"sup(" + i + ")\"> ✘ </button><textarea width=\"50%\" class=\"message\">" + todo + "</textarea></p>";
             }
             function mutex(event) {
                 var cbjour = document.getElementById("idcbjour");
