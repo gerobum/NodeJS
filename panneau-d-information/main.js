@@ -268,7 +268,6 @@ io.sockets.on('connection', function (socket) {
 
     // Traitement classique
     socket.on('new', function (message) {
-        console.log('new');
         readFileListForTodayAndSendToSocket(socket, [], 'lperm');
     });
     // Une tâche a été ajoutée
@@ -288,8 +287,6 @@ io.sockets.on('connection', function (socket) {
         readFileListAndSendToSocket(socket, 'lperm');
     });
     socket.on('change_listlfutur', function (liste) {
-        console.log('change_listlfutur');
-        console.log(liste);
         writeList('lperm', delDoublonForLperm(liste));
         readFileListForTodayAndSendToSocket(socket, [], 'lperm');
         nettoyageListe(socket);
