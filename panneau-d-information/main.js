@@ -77,7 +77,7 @@ var readFileListAndSendToSocket = function (socket, file = 'lperm') {
     });
 };
 
-var readFileListForTodayAndSendToSocket = function (socket, alist = todolist, file = 'lperm') {
+var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm') {
     fs.readFile(file, 'utf8', (err, data) => {
         if (err) {
             console.log("Erreur de lecture du fichier " + file);
