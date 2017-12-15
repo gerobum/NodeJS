@@ -86,6 +86,8 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
                 var list = datify(JSON.parse(data));
                 try {
                     list = alist.concat(list);
+                } catch(e) {
+                    
                 }
                 list = datify(list);
                 todolist = cleanListForNow(list);
