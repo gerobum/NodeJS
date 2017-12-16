@@ -118,8 +118,9 @@ var cleanListForLPerm = function (list) {
 };
 
 var cleanListForNow = function (list) {
-    list = delDoublonForToday(list);
     list = nowMessages(list);
+    list = delDoublonForToday(list)
+            .sort((c1, c2) => c1.debut - c2.debut);
     return list;
 };
 
