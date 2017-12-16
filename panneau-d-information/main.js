@@ -14,6 +14,7 @@ var server = require('http').createServer(app),
         todayAndAfter = require('./js/ChronoMessage').todayAndAfter,
         expireLaterAnyDay = require('./js/ChronoMessage').expireLaterAnyDay,
         forToday = require('./js/ChronoMessage').forToday,
+        compareAnyDay = require('./js/ChronoMessage').compareAnyDay,
         noDoublon = require('./js/ChronoMessage').noDoublon,
         printChronoliste = require('./js/ChronoMessage').printChronoliste,
         urlencodedParser = bodyParser.urlencoded({extended: false});
@@ -86,8 +87,8 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
                 var list = datify(JSON.parse(data));
                 try {
                     list = alist.concat(list);
-                } catch(e) {
-                    
+                } catch (e) {
+
                 }
                 list = datify(list);
                 todolist = cleanListForNow(list);
@@ -104,7 +105,7 @@ var nowMessages = function (list) {
     return list
             .filter(c => forToday(c))
             .filter(c => expireLaterAnyDay(c))
-            .sort((c1, c2) => c1.debut - c2.debut);
+            .sort((c1, c2) => compareAnyDay(c1, c2));
 };
 
 var delOldMessages = function (list) {
@@ -120,7 +121,7 @@ var cleanListForLPerm = function (list) {
 var cleanListForNow = function (list) {
     list = nowMessages(list);
     list = delDoublonForToday(list)
-            .sort((c1, c2) => c1.debut - c2.debut);
+            .sort((c1, c2) => compareAnyDay(c1, c2));
     return list;
 };
 
@@ -137,7 +138,7 @@ var supMessageFromLPermAndSendToSocket = function (cm, socket) {
                 try {
                     var list = datify(JSON.parse(data));
                     todolist = list.filter(cmcrt => JSON.stringify(cmcrt) !== JSON.stringify(cm));
-                    
+
                     fs.writeFile("lperm", JSON.stringify(todolist) + '\n', (err) => {
                         if (err) {
                             console.log("Problème d'écriture dans le fichier lperm");
@@ -205,14 +206,14 @@ var nettoyageListe = function (socket = null) {
                         (c.date === null && (c.hasOwnProperty("jour")
                                 && (c.jour === "Tous les jours" || c.jour === jour))) ||
                         (c.date !== null && sameday(c.date, date))))
-            .sort((c1, c2) => c1.debut - c2.debut);
+            .sort((c1, c2) => compareAnyDay(c1, c2));
 
     if (socket !== null && !todolist.isEqual(newtodolist)) {
         todolist = newtodolist;
         newtodolist = null;
         socket.broadcast.emit('update', {todolist: todolist});
         socket.emit('update', {todolist: todolist});
-    }
+}
 };
 
 // Chargement de la page index.html
@@ -269,7 +270,7 @@ io.sockets.on('connection', function (socket) {
     //UneHeure.setMinutes(00);
     //console.log(UneHeure);
     //schedule(UneHeure, readFileListForTodayAndSendToSocket, socket, null, true);
-    setInterval(readFileListForTodayAndSendToSocket, 60*60*1000, socket);
+    setInterval(readFileListForTodayAndSendToSocket, 60 * 60 * 1000, socket);
 
     // Traitement classique
     socket.on('new', function (message) {

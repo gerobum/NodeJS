@@ -59,6 +59,19 @@ var expireLaterAnyDay = function (cm) {
         return false;
     }
 };
+
+var compareAnyDay = function (c1, c2) {
+    try {
+        if (c1.debut.getHours() < c2.debut.getHours())
+            return -1;
+        else if (c1.debut.getHours() > c2.debut.getHours())
+            return 1;
+        else
+            return c1.debut.getMinutes() - c2.debut.getMinutes();
+    } catch (e) {
+        return 0;
+    }
+}
 var forToday = function (cm) {
     var date = new Date();
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -150,7 +163,7 @@ function test(quoi, qui = "Yvan") {
 var schedule = function (next, afunction, arg = null, n = null, retro = true) {
     //var now = new Date(Date.UTC(next.getFullYear()), next.getMonth(), next.getDate());
     var now = new Date();
-    var demain = new Date(now.getTime()+(1000*60*60*24));
+    var demain = new Date(now.getTime() + (1000 * 60 * 60 * 24));
     console.log("SCHEDULE = " + (now - next));
     var timeout;
     if (now < next) {
@@ -188,6 +201,7 @@ try {
     exports.todayAndAfter = todayAndAfter;
     exports.expireLaterAnyDay = expireLaterAnyDay;
     exports.forToday = forToday;
+    exports.compareAnyDay = compareAnyDay;
     exports.printChronoliste = printChronoliste;
     exports.test = test;
     exports.noDoublon = noDoublon;
