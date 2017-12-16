@@ -67,19 +67,7 @@
 
         <p>
             <span class="hsep">Date: <input id="iddate" class="date" type="checkbox" /> <input disabled id="datepicker" type="text" class="date" autofocus/></span>
-            <span class="hsep">Jour : <input id="idcbjour" type="checkbox" class="jour"/>
-                <select disabled class="jour" id="idjour">
-                    <option selected>Tous les jours</option>
-                    <option>Lundi</option>
-                    <option>Mardi</option>
-                    <option>Mercredi</option>
-                    <option>Jeudi</option>
-                    <option>Vendredi</option>
-                    <option>Samedi</option>
-                    <option>Dimanche</option>
-                </select>
-            </span>
-            <span class="hsep">Ordre : <input id="iddebut" type="checkbox" class="debut"/>
+            <span class="hsep">Début : <input id="iddebut" type="checkbox" class="debut"/>
                 <select disabled class="debut" id="hdebut" name="nom">
                     <option>00
                     <option>01
@@ -107,6 +95,60 @@
                     <option>23              
                 </select>: 
                 <select disabled class="debut" id="mdebut" name="nom" size="1">
+                    <option>00
+                    <option>05
+                    <option>10
+                    <option>15
+                    <option>20
+                    <option>25   
+                    <option>30
+                    <option>35
+                    <option>40
+                    <option>45
+                    <option>50
+                    <option>55             
+                </select>
+            </span>
+            <span class="hsep">Jour : <input id="idcbjour" type="checkbox" class="jour"/>
+                <select disabled class="jour" id="idjour">
+                    <option selected>Tous les jours</option>
+                    <option>Lundi</option>
+                    <option>Mardi</option>
+                    <option>Mercredi</option>
+                    <option>Jeudi</option>
+                    <option>Vendredi</option>
+                    <option>Samedi</option>
+                    <option>Dimanche</option>
+                </select>
+            </span>
+            <span class="hsep">Ordre : <input id="idordre" type="checkbox" class="ordre"/>
+                <select disabled class="ordre" id="hordre" name="nom">
+                    <option>00
+                    <option>01
+                    <option>02
+                    <option>03
+                    <option>04
+                    <option>05
+                    <option>06
+                    <option>07
+                    <option>08
+                    <option>09
+                    <option>10
+                    <option>11 
+                    <option>12
+                    <option>13
+                    <option>14
+                    <option>15
+                    <option>16
+                    <option>17
+                    <option>18
+                    <option>19
+                    <option>20
+                    <option>21 
+                    <option>22
+                    <option>23              
+                </select>: 
+                <select disabled class="ordre" id="mordre" name="nom" size="1">
                     <option>00
                     <option>05
                     <option>10
@@ -217,8 +259,8 @@
                             today.getFullYear(),
                             today.getMonth(),
                             today.getDate(),
-                            (document.getElementById("hdebut").value),
-                            document.getElementById("mdebut").value, 0);
+                            (document.getElementById("hordre").value),
+                            document.getElementById("mordre").value, 0);
 
                     var hrf = new Date(
                             today.getFullYear(),
@@ -305,19 +347,19 @@
 
                 document.getElementById("datepicker").value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
 
-                document.getElementById("hdebut").selectedIndex = date.getHours();
-                document.getElementById("mdebut").selectedIndex = 0;
+                document.getElementById("hordre").selectedIndex = date.getHours();
+                document.getElementById("mordre").selectedIndex = 0;
                 document.getElementById("hfin").selectedIndex = 23;
                 document.getElementById("mfin").selectedIndex = 11;
                 document.getElementById('newtodo').value = "";
 
                 document.getElementById('iddate').checked = true;
-                document.getElementById('iddebut').checked = false;
+                document.getElementById('idordre').checked = false;
                 document.getElementById('idfin').checked = false;
                 document.getElementById('idcbjour').checked = false;
                 document.getElementById('datepicker').disabled = false;
-                document.getElementById('hdebut').disabled = true;
-                document.getElementById('mdebut').disabled = true;
+                document.getElementById('hordre').disabled = true;
+                document.getElementById('mordre').disabled = true;
                 document.getElementById('hfin').disabled = true;
                 document.getElementById('mfin').disabled = true;
                 document.getElementById('idjour').disabled = true;
@@ -327,7 +369,7 @@
                 init();
 
                 document.getElementById("iddate").addEventListener("click", toggle, false);
-                document.getElementById("iddebut").addEventListener("click", toggle, false);
+                document.getElementById("idordre").addEventListener("click", toggle, false);
                 document.getElementById("idfin").addEventListener("click", toggle, false);
                 document.getElementById("idcbjour").addEventListener("click", toggle, false);
 
@@ -338,7 +380,7 @@
             };
             var unloadHandlers = function () {
                 document.getElementById("iddate").removeEventListener("click", toggle, false);
-                document.getElementById("iddebut").removeEventListener("click", toggle, false);
+                document.getElementById("idordre").removeEventListener("click", toggle, false);
                 document.getElementById("idfin").removeEventListener("click", toggle, false);
             };
             //chargement de la page
