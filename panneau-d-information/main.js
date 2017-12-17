@@ -32,6 +32,10 @@ var delDoublonForLperm = function (liste) {
             return -1;
         else if (c1.message > c2.message)
             return 1;
+        else if (c1.ordre < c2.ordre)
+            return -1;
+        else if (c1.ordre > c2.ordre)
+            return 1;
         else if (c1.date < c2.date)
             return -1;
         else if (c1.date > c2.date)
@@ -101,8 +105,6 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
 };
 
 var nowMessages = function (list) {
-    console.log("-----------3");
-    console.log(list.filter(c => c.expireLater()));
     return list
             .filter(c => c.forToday())
             .filter(c => c.expireLater())
@@ -120,15 +122,10 @@ var cleanListForLPerm = function (list) {
 };
 
 var cleanListForNow = function (list) {
-    console.log("Dans clean");
-    console.log(list);
     list = nowMessages(list);
-    console.log("Après now");
-    console.log(list);
+
     list = delDoublonForToday(list)
             .sort((c1, c2) => compareAnyDay(c1, c2));
-    console.log("Après del old");
-    console.log(list);
     return list;
 };
 
@@ -312,7 +309,7 @@ io.sockets.on('connection', function (socket) {
     // Toutes les heures le fichier lperm est nettoyé
     setInterval(addListToLPerm, 60 * 60 * 1000);
 
-    setInterval(readFileListForTodayAndSendToSocket, 60 * 60 * 1000, socket);
+    setInterval(readFileListForTodayAndSendToSocket, 5 * 60 * 1000, socket);
 
     // transformeLperm(); 
 

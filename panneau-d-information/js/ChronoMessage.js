@@ -86,10 +86,6 @@ class ChronoMessage {
     expireLater() {
         var today = new Date();
         var now = new Horaire(today.getHours(), today.getMinutes());
-        
-        console.log("now " + now.toString());
-        console.log("fin " + this.fin.toString());
-        console.log("diff " + (now - this.fin));
         return this.fin > now;
     }
 }
