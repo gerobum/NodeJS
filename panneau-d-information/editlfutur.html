@@ -359,7 +359,7 @@
 
             // Demande de mise à jour
             socket.on('updateeditlfutur', function (data) {
-                liste = data.todolist;
+                liste = data.todaylist;
                 emptyAndFill(liste);
             });
             function sup(i) {

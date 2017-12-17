@@ -403,10 +403,9 @@
             // Demande de mise à jour
             socket.on('update', function (data) {
                 $('#zone_msg').empty();
-                data.todolist = datify(data.todolist);
-                for (let i in data.todolist) {
-                    console.log("UPDATE " + data.todolist[i].toVeryString());
-                    $('#zone_msg').append(one_msg(i, JSON.stringify(data.todolist[i])));
+                data.todaylist = datify(data.todaylist);
+                for (let i in data.todaylist) {
+                    $('#zone_msg').append(one_msg(i, JSON.stringify(data.todaylist[i])));
                 }
             });
             function sup(i) {

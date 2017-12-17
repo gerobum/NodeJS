@@ -77,7 +77,7 @@ var readFileListAndSendToSocket = function (socket, file = 'lperm') {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
             }
         }
-        socket.emit('updateeditlfutur', {todolist: list});
+        socket.emit('updateeditlfutur', {todaylist: list});
     });
 };
 
@@ -94,13 +94,13 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
 
                 }
                 list = datify(list);
-                todolist = cleanListForNow(list);
+                todaylist = cleanListForNow(list);
             } catch (e) {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
             }
         }
-        socket.broadcast.emit('update', {todolist: todolist});
-        socket.emit('update', {todolist: todolist});
+        socket.broadcast.emit('update', {todaylist: todaylist});
+        socket.emit('update', {todaylist: todaylist});
     });
 };
 
@@ -141,9 +141,9 @@ var supMessageFromLPermAndSendToSocket = function (cm, socket) {
             } else {
                 try {
                     var list = datify(JSON.parse(data));
-                    todolist = list.filter(cmcrt => JSON.stringify(cmcrt) !== JSON.stringify(cm));
+                    todaylist = list.filter(cmcrt => JSON.stringify(cmcrt) !== JSON.stringify(cm));
 
-                    fs.writeFile("lperm", JSON.stringify(todolist) + '\n', (err) => {
+                    fs.writeFile("lperm", JSON.stringify(todaylist) + '\n', (err) => {
                         if (err) {
                             console.log("Problème d'écriture dans le fichier lperm");
                         }
@@ -153,8 +153,8 @@ var supMessageFromLPermAndSendToSocket = function (cm, socket) {
                 }
             }
 
-            socket.broadcast.emit('update', {todolist: todolist});
-            socket.emit('update', {todolist: todolist});
+            socket.broadcast.emit('update', {todaylist: todaylist});
+            socket.emit('update', {todaylist: todaylist});
         });
     }
 };
@@ -219,7 +219,7 @@ var transformeLperm = function () {
     });
 };
 
-var writeList = function (file = 'lperm', list = todolist) {
+var writeList = function (file = 'lperm', list = todaylist) {
     fs.writeFile(file, JSON.stringify(list) + '\n', (err) => {
         if (err) {
             console.log("Problème d'écriture dans le fichier lperm");
@@ -244,7 +244,7 @@ var nettoyageListe = function (socket = null) {
     var date = new Date();
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     var jour = tjour[new Date().getDay()];
-    var newtodolist = todolist
+    var newtodaylist = todaylist
             .filter(c => c.expireLater())
             .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                         (c.date === null && (c.hasOwnProperty("jour")
@@ -252,22 +252,22 @@ var nettoyageListe = function (socket = null) {
                         (c.date !== null && sameday(c.date, date))))
             .sort((c1, c2) => compareAnyDay(c1, c2));
 
-    if (socket !== null && !todolist.isEqual(newtodolist)) {
-        todolist = newtodolist;
-        newtodolist = null;
-        socket.broadcast.emit('update', {todolist: todolist});
-        socket.emit('update', {todolist: todolist});
+    if (socket !== null && !todaylist.isEqual(newtodaylist)) {
+        todaylist = newtodaylist;
+        newtodaylist = null;
+        socket.broadcast.emit('update', {todaylist: todaylist});
+        socket.emit('update', {todaylist: todaylist});
 }
 };
 
 // Chargement de la page index.html
 app.use(session({secret: 'todotopsecret'}))
 
-        /* S'il n'y a pas de todolist dans la session,
+        /* S'il n'y a pas de todaylist dans la session,
          on en crée une vide sous forme d'array avant la suite */
         .use(function (req, res, next) {
-            if (typeof (req.session.todolist) === 'undefined') {
-                req.session.todolist = [];
+            if (typeof (req.session.todaylist) === 'undefined') {
+                req.session.todaylist = [];
             }
             next();
         })
@@ -282,12 +282,12 @@ app.use(session({secret: 'todotopsecret'}))
             res.sendFile(__dirname + '/editlfutur.html');
         })
 
-        /* Supprime un élément de la todolist */
+        /* Supprime un élément de la todaylist */
         .get('/write/supprimer/:id', function (req, res) {
             if (req.params.id !== '') {
-                todolist(req.params.id, 1);
-                req.socket.emit('update', {todolist: todolist});
-                req.socket.broadcast.emit('update', {todolist: todolist});
+                todaylist(req.params.id, 1);
+                req.socket.emit('update', {todaylist: todaylist});
+                req.socket.broadcast.emit('update', {todaylist: todaylist});
             }
             res.redirect('/write');
         })
@@ -296,12 +296,12 @@ app.use(session({secret: 'todotopsecret'}))
         // Pour pouvoir afficher des images.        
         .use('/images', express.static('images'))
 
-        /* On redirige vers la todolist si la page demandée n'est pas trouvée */
+        /* On redirige vers la todaylist si la page demandée n'est pas trouvée */
         .use(function (req, res, next) {
             res.redirect('/read');
         });
 
-var todolist = [];
+var todaylist = [];
 
 io.sockets.on('connection', function (socket) {
     // Toutes les minutes la liste est nettoyée
@@ -309,7 +309,7 @@ io.sockets.on('connection', function (socket) {
     // Toutes les heures le fichier lperm est nettoyé
     setInterval(addListToLPerm, 60 * 60 * 1000);
 
-    setInterval(readFileListForTodayAndSendToSocket, 5 * 60 * 1000, socket);
+    setInterval(readFileListForTodayAndSendToSocket, 60 * 60 * 1000, socket);
 
     // transformeLperm(); 
 
@@ -321,13 +321,13 @@ io.sockets.on('connection', function (socket) {
     socket.on('change_list', function (liste) {
         liste = datify(liste);
         addListToLPerm(liste);
-        todolist = todolist.concat(liste);
-        todolist = cleanListForNow(todolist);
-        readFileListForTodayAndSendToSocket(socket, todolist, 'lperm');
+        todaylist = todaylist.concat(liste);
+        todaylist = cleanListForNow(todaylist);
+        readFileListForTodayAndSendToSocket(socket, todaylist, 'lperm');
     });
     // Supprimer la tâche i
     socket.on('sup_msg', function (i) {
-        supMessageFromLPermAndSendToSocket(todolist[i], socket);
+        supMessageFromLPermAndSendToSocket(todaylist[i], socket);
         nettoyageListe(socket);
     });
     socket.on('neweditlfutur', function () {

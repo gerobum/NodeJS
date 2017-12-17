@@ -102,8 +102,8 @@
             // Demande de mise à jour
             socket.on('update', function (data) {
                 $('#zone_msg').empty();
-                for (var i in data.todolist) {
-                    $('#zone_msg').append(one_msg(i, data.todolist[i].message));
+                for (var i in data.todaylist) {
+                    $('#zone_msg').append(one_msg(i, data.todaylist[i].message));
                 }
             });
         </script>
