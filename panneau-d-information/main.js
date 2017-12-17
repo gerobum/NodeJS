@@ -6,13 +6,12 @@ var server = require('http').createServer(app),
         fs = require('fs'),
         session = require('cookie-session'),
         bodyParser = require('body-parser'),
-        ChronoMessage = require('./js/ChronoMessage').ChronoMessage,
         Horaire = require('./js/ChronoMessage').Horaire,
+        ChronoMessage = require('./js/ChronoMessage').ChronoMessage,
         schedule = require('./js/ChronoMessage').schedule,
         datify = require('./js/ChronoMessage').datify,
         sameday = require('./js/ChronoMessage').sameday,
         todayAndAfter = require('./js/ChronoMessage').todayAndAfter,
-        expireLaterAnyDay = require('./js/ChronoMessage').expireLaterAnyDay,
         forToday = require('./js/ChronoMessage').forToday,
         compareAnyDay = require('./js/ChronoMessage').compareAnyDay,
         noDoublon = require('./js/ChronoMessage').noDoublon,
@@ -84,7 +83,7 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
             console.log("Erreur de lecture du fichier " + file);
         } else {
             try {
-                var list = datify(JSON.parse(data));
+                var list = JSON.parse(data);
                 try {
                     list = alist.concat(list);
                 } catch (e) {
@@ -102,10 +101,12 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
 };
 
 var nowMessages = function (list) {
+    console.log("-----------3");
+    console.log(list.filter(c => c.expireLater()));
     return list
-            .filter(c => forToday(c))
-            .filter(c => expireLaterAnyDay(c))
-            .sort((c1, c2) => compareAnyDay(c1, c2));
+            .filter(c => c.forToday())
+            .filter(c => c.expireLater())
+            .sort((c1, c2) => c1.debut - c2.debut);
 };
 
 var delOldMessages = function (list) {
@@ -119,9 +120,15 @@ var cleanListForLPerm = function (list) {
 };
 
 var cleanListForNow = function (list) {
+    console.log("Dans clean");
+    console.log(list);
     list = nowMessages(list);
+    console.log("Après now");
+    console.log(list);
     list = delDoublonForToday(list)
             .sort((c1, c2) => compareAnyDay(c1, c2));
+    console.log("Après del old");
+    console.log(list);
     return list;
 };
 
@@ -176,6 +183,45 @@ var addListToLPerm = function (list = []) {
     });
 };
 
+var transformeLperm = function () {
+    console.log("Transforme");
+    fs.readFile("lperm", 'utf8', (err, data) => {
+        if (err) {
+            console.log("Problème de lecture du fichier lperm");
+        } else {
+            try {
+                var list = JSON.parse(data);
+                //list = datify(list);
+                var listsave = [];
+                for (let cm of list) {
+                    // (date, jour, debut, ordre, fin, message)
+                    var adate;
+                    if (cm.date === null) {
+                        adate = null;
+                    } else {
+                        adate = new Date(cm.date);
+                    }
+                    var ncm = new ChronoMessage(adate,
+                            cm.jour,
+                            new Horaire(12, 0),
+                            new Horaire(new Date(cm.debut).getHours(), new Date(cm.debut).getMinutes()),
+                            new Horaire(new Date(cm.fin).getHours(), new Date(cm.fin).getMinutes()),
+                            cm.message);
+                    listsave.push(ncm);
+                }
+
+                fs.writeFile("../lpermsave", JSON.stringify(listsave) + '\n', (err) => {
+                    if (err) {
+                        console.log("Problème d'écriture dans le fichier lperm");
+                    }
+                });
+            } catch (e) {
+                console.log("Erreur de chargement de la liste dans lpermsave " + e);
+            }
+        }
+    });
+};
+
 var writeList = function (file = 'lperm', list = todolist) {
     fs.writeFile(file, JSON.stringify(list) + '\n', (err) => {
         if (err) {
@@ -183,6 +229,7 @@ var writeList = function (file = 'lperm', list = todolist) {
         }
     });
 };
+
 
 
 Array.prototype.isEqual = function (b) {
@@ -195,13 +242,13 @@ Array.prototype.isEqual = function (b) {
     return true;
 };
 
-
+ 
 var nettoyageListe = function (socket = null) {
     var date = new Date();
     var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     var jour = tjour[new Date().getDay()];
     var newtodolist = todolist
-            .filter(c => expireLaterAnyDay(c))
+            .filter(c => c.expireLater())
             .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
                         (c.date === null && (c.hasOwnProperty("jour")
                                 && (c.jour === "Tous les jours" || c.jour === jour))) ||
@@ -264,18 +311,15 @@ io.sockets.on('connection', function (socket) {
     setInterval(nettoyageListe, 60 * 1000, socket);
     // Toutes les heures le fichier lperm est nettoyé
     setInterval(addListToLPerm, 60 * 60 * 1000);
-    // (next, afunction, n = null, retro = true, arg = null)
-    //UneHeure = new Date(); 
-    //UneHeure.setHours(1);
-    //UneHeure.setMinutes(00);
-    //console.log(UneHeure);
-    //schedule(UneHeure, readFileListForTodayAndSendToSocket, socket, null, true);
+
     setInterval(readFileListForTodayAndSendToSocket, 60 * 60 * 1000, socket);
+
+    // transformeLperm(); 
 
     // Traitement classique
     socket.on('new', function (message) {
-        readFileListForTodayAndSendToSocket(socket, [], 'lperm');
-    });
+     readFileListForTodayAndSendToSocket(socket, [], 'lperm');
+     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
         liste = datify(liste);
