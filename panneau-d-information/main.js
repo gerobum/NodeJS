@@ -77,7 +77,7 @@ var readFileListAndSendToSocket = function (socket, file = 'lperm') {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
             }
         }
-        socket.emit('updateeditlfutur', {todaylist: list});
+        socket.emit('updateeditlfutur', {totallist: list});
     });
 };
 
@@ -94,7 +94,7 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
 
                 }
                 list = datify(list);
-                todaylist = cleanListForNow(list);
+                todaylist = cleanListForToday(list);
             } catch (e) {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
             }
@@ -121,7 +121,7 @@ var cleanListForLPerm = function (list) {
     return list;
 };
 
-var cleanListForNow = function (list) {
+var cleanListForToday = function (list) {
     list = nowMessages(list);
 
     list = delDoublonForToday(list)
@@ -322,7 +322,7 @@ io.sockets.on('connection', function (socket) {
         liste = datify(liste);
         addListToLPerm(liste);
         todaylist = todaylist.concat(liste);
-        todaylist = cleanListForNow(todaylist);
+        todaylist = cleanListForToday(todaylist);
         readFileListForTodayAndSendToSocket(socket, todaylist, 'lperm');
     });
     // Supprimer la tâche i
