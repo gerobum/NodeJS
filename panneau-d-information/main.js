@@ -104,11 +104,11 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
     });
 };
 
-var nowMessages = function (list) {
+var todayMessages = function (list) {
     return list
             .filter(c => c.forToday())
             .filter(c => c.expireLater())
-            .sort((c1, c2) => c1.debut - c2.debut);
+            .sort((c1, c2) => c1.ordre - c2.ordre);
 };
 
 var delOldMessages = function (list) {
@@ -122,7 +122,7 @@ var cleanListForLPerm = function (list) {
 };
 
 var cleanListForToday = function (list) {
-    list = nowMessages(list);
+    list = todayMessages(list);
 
     list = delDoublonForToday(list)
             .sort((c1, c2) => compareAnyDay(c1, c2));
