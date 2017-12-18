@@ -94,7 +94,10 @@ var readFileListForTodayAndSendToSocket = function (socket, alist, file = 'lperm
 
                 }
                 list = datify(list);
-                todaylist = cleanListForToday(list);
+
+                todaylist = cleanListForTodayAndForNow(list);
+                todaylist = delDoublonForToday(todaylist);
+
             } catch (e) {
                 console.log("Erreur de chargement de la liste dans " + file + " (" + e + ")");
             }
@@ -111,6 +114,14 @@ var todayMessages = function (list) {
             .sort((c1, c2) => c1.ordre - c2.ordre);
 };
 
+var nowMessages = function (list) {
+    return list
+            .filter(c => c.forToday())
+            .filter(c => c.expireLater())
+            .filter(c => c.yet())
+            .sort((c1, c2) => c1.ordre - c2.ordre);
+};
+
 var delOldMessages = function (list) {
     return list.filter(cm => todayAndAfter(cm));
 };
@@ -121,12 +132,9 @@ var cleanListForLPerm = function (list) {
     return list;
 };
 
-var cleanListForToday = function (list) {
-    list = todayMessages(list);
-
-    list = delDoublonForToday(list)
-            .sort((c1, c2) => compareAnyDay(c1, c2));
-    return list;
+var cleanListForTodayAndForNow = function (list) {
+    var newtodaylist = todayMessages(list);
+    return newtodaylist;
 };
 
 var supMessageFromLPermAndSendToSocket = function (cm, socket) {
@@ -241,23 +249,12 @@ Array.prototype.isEqual = function (b) {
 
  
 var nettoyageListe = function (socket = null) {
-    var date = new Date();
-    var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
-    var jour = tjour[new Date().getDay()];
-    var newtodaylist = todaylist
-            .filter(c => c.expireLater())
-            .filter(c => ((c.date === null && !c.hasOwnProperty("jour")) ||
-                        (c.date === null && (c.hasOwnProperty("jour")
-                                && (c.jour === "Tous les jours" || c.jour === jour))) ||
-                        (c.date !== null && sameday(c.date, date))))
-            .sort((c1, c2) => compareAnyDay(c1, c2));
-
+    var newtodaylist = nowMessages(todaylist);
     if (socket !== null && !todaylist.isEqual(newtodaylist)) {
-        todaylist = newtodaylist;
-        newtodaylist = null;
-        socket.broadcast.emit('update', {todaylist: todaylist});
-        socket.emit('update', {todaylist: todaylist});
-}
+        console.log("-----CHGT-----");
+        socket.broadcast.emit('update', {todaylist: newtodaylist});
+        socket.emit('update', {todaylist: newtodaylist});
+    }
 };
 
 // Chargement de la page index.html
@@ -311,18 +308,16 @@ io.sockets.on('connection', function (socket) {
 
     setInterval(readFileListForTodayAndSendToSocket, 60 * 60 * 1000, socket);
 
-    // transformeLperm(); 
-
     // Traitement classique
     socket.on('new', function (message) {
-     readFileListForTodayAndSendToSocket(socket, [], 'lperm');
-     });
+        readFileListForTodayAndSendToSocket(socket, [], 'lperm');
+    });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
+        console.log(liste);
         liste = datify(liste);
         addListToLPerm(liste);
         todaylist = todaylist.concat(liste);
-        todaylist = cleanListForToday(todaylist);
         readFileListForTodayAndSendToSocket(socket, todaylist, 'lperm');
     });
     // Supprimer la tâche i

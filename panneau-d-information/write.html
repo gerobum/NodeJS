@@ -254,22 +254,19 @@
                         date.setHours(23);
                         date.setMinutes(59);
                     }
-                    var today = new Date();
-                    var hrd = new Date(
-                            today.getFullYear(),
-                            today.getMonth(),
-                            today.getDate(),
+                    var hrd = new Horaire(
+                            (document.getElementById("hdebut").value),
+                            (document.getElementById("mdebut").value));
+                    var hro = new Horaire(
                             (document.getElementById("hordre").value),
-                            document.getElementById("mordre").value, 0);
+                            (document.getElementById("mordre").value));
 
-                    var hrf = new Date(
-                            today.getFullYear(),
-                            today.getMonth(),
-                            today.getDate(),
+                    var hrf = new Horaire(
                             (document.getElementById("hfin").value),
-                            document.getElementById("mfin").value, 0);
-
-                    var cm = new ChronoMessage(date, document.getElementById("idjour").value, hrd, hrf, message);
+                            (document.getElementById("mfin").value));
+                            
+                    console.log(hrf.toString());
+                    var cm = new ChronoMessage(date, document.getElementById("idjour").value, hrd, hro, hrf, message);
 
                     liste.push(cm);
 
@@ -349,15 +346,20 @@
 
                 document.getElementById("hordre").selectedIndex = date.getHours();
                 document.getElementById("mordre").selectedIndex = 0;
+                document.getElementById("hdebut").selectedIndex = 2;
+                document.getElementById("mdebut").selectedIndex = 0;
                 document.getElementById("hfin").selectedIndex = 23;
                 document.getElementById("mfin").selectedIndex = 11;
                 document.getElementById('newtodo').value = "";
 
                 document.getElementById('iddate').checked = true;
                 document.getElementById('idordre').checked = false;
+                document.getElementById('iddebut').checked = false;
                 document.getElementById('idfin').checked = false;
                 document.getElementById('idcbjour').checked = false;
                 document.getElementById('datepicker').disabled = false;
+                document.getElementById('hdebut').disabled = true;
+                document.getElementById('mdebut').disabled = true;
                 document.getElementById('hordre').disabled = true;
                 document.getElementById('mordre').disabled = true;
                 document.getElementById('hfin').disabled = true;
@@ -369,6 +371,7 @@
                 init();
 
                 document.getElementById("iddate").addEventListener("click", toggle, false);
+                document.getElementById("iddebut").addEventListener("click", toggle, false);
                 document.getElementById("idordre").addEventListener("click", toggle, false);
                 document.getElementById("idfin").addEventListener("click", toggle, false);
                 document.getElementById("idcbjour").addEventListener("click", toggle, false);
@@ -380,6 +383,7 @@
             };
             var unloadHandlers = function () {
                 document.getElementById("iddate").removeEventListener("click", toggle, false);
+                document.getElementById("iddebut").removeEventListener("click", toggle, false);
                 document.getElementById("idordre").removeEventListener("click", toggle, false);
                 document.getElementById("idfin").removeEventListener("click", toggle, false);
             };

@@ -60,7 +60,7 @@ class ChronoMessage {
         this.jour = jour;
         this.debut = new Horaire(debut.h, debut.m);
         this.ordre = new Horaire(ordre.h, ordre.m);
-        this.fin = new Horaire(fin.h, ordre.m);
+        this.fin = new Horaire(fin.h, fin.m);
         this.message = message;
     }
 
@@ -76,9 +76,10 @@ class ChronoMessage {
         var tjour = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
         var jour = tjour[new Date().getDay()];
         try {
-            return ((this.date === null && this.jour === "Tous les jours" || this.jour === jour) ||
+            return (this.date === null && (this.jour === "Tous les jours" || this.jour === jour) ||
                     (this.date !== null && sameday(this.date, date)));
         } catch (err) {
+            console.log("Erreur dans forToday " + e);
             return false;
         }
     }
@@ -87,6 +88,12 @@ class ChronoMessage {
         var today = new Date();
         var now = new Horaire(today.getHours(), today.getMinutes());
         return this.fin > now;
+    }
+
+    yet() {
+        var today = new Date();
+        var now = new Horaire(today.getHours(), today.getMinutes());
+        return now >= this.debut;
     }
 }
 
