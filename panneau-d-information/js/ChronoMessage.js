@@ -1,8 +1,3 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 class Horaire {
     constructor(h, m) {
@@ -186,7 +181,6 @@ var schedule = function (next, afunction, arg = null, n = null, retro = true) {
 //var now = new Date(Date.UTC(next.getFullYear()), next.getMonth(), next.getDate());
     var now = new Date();
     var demain = new Date(now.getTime() + (1000 * 60 * 60 * 24));
-    console.log("SCHEDULE = " + (now - next));
     var timeout;
     if (now < next) {
         timeout = next - now;

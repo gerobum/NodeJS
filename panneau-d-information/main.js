@@ -189,7 +189,6 @@ var addListToLPerm = function (list = []) {
 };
 
 var transformeLperm = function () {
-    console.log("Transforme");
     fs.readFile("lperm", 'utf8', (err, data) => {
         if (err) {
             console.log("Problème de lecture du fichier lperm");
@@ -251,7 +250,6 @@ Array.prototype.isEqual = function (b) {
 var nettoyageListe = function (socket = null) {
     var newtodaylist = nowMessages(todaylist);
     if (socket !== null && !todaylist.isEqual(newtodaylist)) {
-        console.log("-----CHGT-----");
         socket.broadcast.emit('update', {todaylist: newtodaylist});
         socket.emit('update', {todaylist: newtodaylist});
     }
@@ -314,7 +312,6 @@ io.sockets.on('connection', function (socket) {
     });
     // Une tâche a été ajoutée
     socket.on('change_list', function (liste) {
-        console.log(liste);
         liste = datify(liste);
         addListToLPerm(liste);
         todaylist = todaylist.concat(liste);
