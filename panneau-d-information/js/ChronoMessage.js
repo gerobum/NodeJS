@@ -48,7 +48,7 @@ class ChronoMessage {
      */
     constructor(date, jour, debut, ordre, fin, message) {
         if (date === null) {
-            this.date = date;
+            this.date = null;
         } else {
             this.date = new Date(date);
         }
@@ -90,6 +90,17 @@ class ChronoMessage {
         var now = new Horaire(today.getHours(), today.getMinutes());
         return now >= this.debut;
     }
+    
+    todayAndAfter() {
+        
+        var today = new Date();
+        console.log(this.message + " - date : " + this.date + " - " + (this.date >= today));
+        
+        if (this.date === null)
+            return true;
+        else 
+            return this.date >= today;
+    }
 }
 
 var printChronoliste = function (msg, liste) {
@@ -118,20 +129,6 @@ var sameday = function (d1, d2) {
                 d1.getFullYear() === d2.getFullYear();
     } catch (err) {
         return false;
-    }
-};
-var todayAndAfter = function (cm) {
-    now = new Date();
-    try {
-        return (cm.date === null) ||
-                (cm.date.getFullYear() > now.getFullYear()) ||
-                (cm.date.getFullYear() === now.getFullYear() &&
-                        cm.date.getMonth() > now.getMonth()) ||
-                (cm.date.getFullYear() === now.getFullYear() &&
-                        cm.date.getMonth() === now.getMonth() &&
-                        cm.date.getDate() >= now.getDate());
-    } catch (err) {
-        return true;
     }
 };
 var noDoublon = function (liste, cmp = (x1, x2) => x1 - x2) {
@@ -232,7 +229,6 @@ try {
     exports.schedule = schedule;
     exports.datify = datify;
     exports.sameday = sameday;
-    exports.todayAndAfter = todayAndAfter;
     exports.compareAnyDay = compareAnyDay;
     exports.printChronoliste = printChronoliste;
     exports.test = test;

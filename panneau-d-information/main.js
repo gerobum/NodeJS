@@ -11,7 +11,6 @@ var server = require('http').createServer(app),
         schedule = require('./js/ChronoMessage').schedule,
         datify = require('./js/ChronoMessage').datify,
         sameday = require('./js/ChronoMessage').sameday,
-        todayAndAfter = require('./js/ChronoMessage').todayAndAfter,
         forToday = require('./js/ChronoMessage').forToday,
         compareAnyDay = require('./js/ChronoMessage').compareAnyDay,
         noDoublon = require('./js/ChronoMessage').noDoublon,
@@ -123,7 +122,7 @@ var nowMessages = function (list) {
 };
 
 var delOldMessages = function (list) {
-    return list.filter(cm => todayAndAfter(cm));
+    return list.filter(cm => cm.todayAndAfter());
 };
 
 var cleanListForLPerm = function (list) {
@@ -326,7 +325,9 @@ io.sockets.on('connection', function (socket) {
         readFileListAndSendToSocket(socket, 'lperm');
     });
     socket.on('change_listlfutur', function (liste) {
-        writeList('lperm', delDoublonForLperm(liste));
+        console.log(liste);
+        liste = datify(liste);
+        writeList('lperm', cleanListForLPerm(liste));
         readFileListForTodayAndSendToSocket(socket, [], 'lperm');
         nettoyageListe(socket);
     });
