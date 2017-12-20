@@ -61,8 +61,7 @@
         <h1 class="titre">Bonjour Maman</h1>        
         <h2 class="titre">Nous sommes le <span id="div_date"></span></h2>
         <h2 class="titre" style="padding-bottom: 5px;">Il est <span id="div_horloge"></span></h2>
-        <div class="titre" id="zone_msg">
-        </div>
+        <div class="titre" id="zone_msg"></div>
 
 
         <div id="msgarea"></div>
@@ -90,14 +89,10 @@
             window.onload = function () {
                 horloge(document);
                 setInterval(horloge, 1000, document);
-                create();
+                create("change_list");
             };
         </script>
-        <script>
-            $(function () {
-                $("#iddp").datepicker();
-            });
-        </script>
+
         <script>
 
             var init = function () {

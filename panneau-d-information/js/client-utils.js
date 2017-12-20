@@ -12,7 +12,6 @@
 function toggle(event) {
     var cb = event.target;
     var el = document.querySelector('#' + cb.id);
-    ;
     var ips = el.dataset.toggleClass;
     for (var e of document.getElementsByClassName(ips)) {
         e.disabled = !cb.checked;
@@ -56,7 +55,7 @@ function getChronoMessage(elt) {
  * @returns {Boolean}
  */
 function send(event) {
-
+    var button = event.target;
     var liste = [];
 
     for (var e of document.getElementsByClassName("liste")) {
@@ -92,7 +91,7 @@ function send(event) {
 
     liste = datify(liste);
 
-    socket.emit('change_list', liste); // Transmet la liste au serveur
+    socket.emit(button.getAttribute("data-type-evt"), liste); // Transmet la liste au serveur
     init();
     return false;
 }
@@ -250,14 +249,22 @@ function createTextArea(id) {
 /*
  * <button id="sendbutton">Envoyer le message</button>
  */
-function createSendButton(id) {
+function createSendButton(id, typeEvt) {
     var elt = document.createElement("button");
     elt.setAttribute("id", id);
+    elt.setAttribute("data-type-evt", typeEvt);
     elt.appendChild(document.createTextNode("Envoyer le message"));
 
     return elt;
 }
-function create() {
+/*
+ * Crée le formulaire. 
+ * typeevt est le type d'événement à envoyer dans la socket.
+ * Par exemple 
+ *   - depuis write.html      c'est 'change_list' 
+ *   - depuis editlfutur.html c'est 'change_listlfutur'
+ */
+function create(typeEvt) {
     var n = document.getElementById("msgarea");
     var p = document.createElement("p");
     p.appendChild(createDate());
@@ -266,7 +273,7 @@ function create() {
     p.appendChild(createHoraire("Ordre", "ordre"));
     p.appendChild(createHoraire("Expiration", "fin"));
     p.appendChild(createTextArea("newtodo"));
-    p.appendChild(createSendButton("sendbutton"));
+    p.appendChild(createSendButton("sendbutton", typeEvt));
 
     n.appendChild(p);
 }

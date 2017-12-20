@@ -62,240 +62,39 @@
         <h2 class="titre">Nous sommes le <span id="div_date"></span></h2>
         <h2 class="titre" style="padding-bottom: 5px;">Il est <span id="div_horloge"></span></h2>
 
-        <div class="titre" id="zone_msg">
-        </div>
-
-        <p>
-            <span class="hsep">Date: <input id="iddate" class="date" type="checkbox" /> <input disabled id="datepicker" type="text" class="date" autofocus/></span>
-            <span class="hsep">Jour : <input id="idcbjour" type="checkbox" class="jour"/>
-                <select disabled class="jour" id="idjour">
-                    <option selected>Tous les jours</option>
-                    <option>Lundi</option>
-                    <option>Mardi</option>
-                    <option>Mercredi</option>
-                    <option>Jeudi</option>
-                    <option>Vendredi</option>
-                    <option>Samedi</option>
-                    <option>Dimanche</option>
-                </select>
-            </span>
-            <span class="hsep">Ordre : <input id="iddebut" type="checkbox" class="debut"/>
-                <select disabled class="debut" id="hdebut" name="nom">
-                    <option>00
-                    <option>01
-                    <option>02
-                    <option>03
-                    <option>04
-                    <option>05
-                    <option>06
-                    <option>07
-                    <option>08
-                    <option>09
-                    <option>10
-                    <option>11 
-                    <option>12
-                    <option>13
-                    <option>14
-                    <option>15
-                    <option>16
-                    <option>17
-                    <option>18
-                    <option>19
-                    <option>20
-                    <option>21 
-                    <option>22
-                    <option>23              
-                </select>: 
-                <select disabled class="debut" id="mdebut" name="nom" size="1">
-                    <option>00
-                    <option>05
-                    <option>10
-                    <option>15
-                    <option>20
-                    <option>25   
-                    <option>30
-                    <option>35
-                    <option>40
-                    <option>45
-                    <option>50
-                    <option>55             
-                </select>
-            </span>
-
-            <span class="hsep">Expiration : <input id="idfin" type="checkbox" class ="fin"/>
-                <select disabled id="hfin" class="fin" size="1">
-                    <option>00
-                    <option>01
-                    <option>02
-                    <option>03
-                    <option>04
-                    <option>05
-                    <option>06
-                    <option>07
-                    <option>08
-                    <option>09
-                    <option>10
-                    <option>11 
-                    <option>12
-                    <option>13
-                    <option>14
-                    <option>15
-                    <option>16
-                    <option>17
-                    <option>18
-                    <option>19
-                    <option>20
-                    <option>21 
-                    <option>22
-                    <option>23              
-                </select>: 
-                <select disabled id="mfin" class="fin">
-                    <option>00
-                    <option>05
-                    <option>10
-                    <option>15
-                    <option>20
-                    <option>25   
-                    <option>30
-                    <option>35
-                    <option>40
-                    <option>45
-                    <option>50
-                    <option>55             
-                </select>   
-            </span>
-        </p>
-        <textarea cols="80" rows="10" placeholder="Un message" name="newtodo" id="newtodo" ></textarea>
-        <button id="sendbutton">Envoyer le message</button>
+        <div class="titre" id="zone_msg"></div>
+        
+        <div id="msgarea"></div>
 
         <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-        <script src="js/datepicker-config.js"></script>
-
-        <script>
-            /*
-             * Action à associer à un chechbox.
-             * Rend "enabled" ou "disabled" tous les éléments qui ont
-             * une classe en commun avec le checkbox (sauf le checkbox lui-même)
-             * selon qu'il soit coché ou non.
-             */
-            function toggle(event) {
-                var cb = event.target;
-                var ips = cb.classList;
-                for (var e of document.getElementsByClassName(ips)) {
-                    e.disabled = !cb.checked;
-                }
-                cb.disabled = false;
-            }
-            /*
-             * Action à associer à un chechbox.
-             * Rend "enabled" ou "disabled" tous les éléments qui ont
-             * une classe en commun avec le checkbox (sauf le checkbox lui-même)
-             * selon qu'il soit coché ou non.
-             */
-            function send(event) {
-                var message = document.getElementById("newtodo").value.trim();
-                var liste = [];
-                for (var e of document.getElementsByClassName("message")) {
-                    liste.push(JSON.parse(e.value));
-                }
-
-                if (message !== "") {
-                    var date = $("#datepicker").datepicker("getDate");
-                    if (date !== null) {
-                        date.setHours(23);
-                        date.setMinutes(59);
-                    }
-                    var today = new Date();
-                    var hrd = new Date(
-                            today.getFullYear(),
-                            today.getMonth(),
-                            today.getDate(),
-                            (document.getElementById("hdebut").value),
-                            document.getElementById("mdebut").value, 0);
-
-                    var hrf = new Date(
-                            today.getFullYear(),
-                            today.getMonth(),
-                            today.getDate(),
-                            (document.getElementById("hfin").value),
-                            document.getElementById("mfin").value, 0);
-
-                    var cm = new ChronoMessage(date, document.getElementById("idjour").value, hrd, hrf, message);
-
-                    liste.push(cm);
-
-
-                }
-
-                liste = datify(liste);
-                socket.emit('change_listlfutur', liste); // Transmet la liste au serveur
-                init();
-                return false;
-            }
-            function one_msg(i, todo) {
-                var classe;
-                if (i % 2 === 0) {
-                    classe = "pair";
-                } else {
-                    classe = "impair";
-                }
-                //return "<p class=\"liste " + classe + "\"><span class=\"cliquable\" onclick=\"up(" + i + ")\"> (↑) </span><span class=\"cliquable\" onclick=\"down(" + i + ")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup(" + i + ")\"> (✘) </span><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";            
-
-                return "<p class=\"liste " + classe + "\"><button class=\"cliquable\" onclick=\"sup(" + i + ")\"> ✘ </button><textarea class=\"message\" cols=\"170\" rows=\"2\">" + todo + "</textarea></p>";
-            }
-            function mutex(event) {
-                var cbjour = document.getElementById("idcbjour");
-                var cbdate = document.getElementById("iddate");
-                var jourchoice = document.getElementById("idjour");
-                var datechoice = document.getElementById("datepicker");
-
-                if (cbjour === event.target) {
-                    if (cbjour.checked) {
-                        cbdate.checked = false;
-                        datechoice.value = null;
-                        datechoice.disabled = true;
-                    }
-                } else if (cbdate === event.target) {
-                    if (cbjour.checked) {
-                        cbjour.checked = false;
-                        jourchoice.selectedIndex = 0;
-                        jourchoice.disabled = true;
-                    }
-                    if (cbdate.checked) {
-                        let date = new Date();
-                        datechoice.value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
-                    } else {
-                        datechoice.value = null;
-                    }
-                }
-            }
-        </script>
-
-
+        <script src="js/datepicker-config.js"></script>           
+        <script src="/socket.io/socket.io.js"></script>
         <script src="./js/ChronoMessage.js"></script>
+        <script src="js/client-utils.js"></script>
         <!-- 
         Permet de paramétrer la variable localhost
         Le fichier "./js/hostname.js" est dans .gitignore.
         Il définit localement la variable hostname
         -->
-        <script src="./js/hostname.js"></script>
+        <script src="./js/hostname.js"></script>        
 
 
         <script>
             window.onload = function () {
                 horloge(document);
                 setInterval(horloge, 1000, document);
+                create("change_listlfutur");
             };
         </script>
 
         <script>
 
             var init = function () {
-                $('#datepicker').datepicker();
+                $('#iddp').datepicker({autoSize: true, defaultDate: new Date(), setDate: new Date()});
                 var date = new Date();
 
-                document.getElementById("datepicker").value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+                document.getElementById("iddp").value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
 
                 document.getElementById("hdebut").selectedIndex = date.getHours();
                 document.getElementById("mdebut").selectedIndex = 0;
@@ -307,7 +106,7 @@
                 document.getElementById('iddebut').checked = false;
                 document.getElementById('idfin').checked = false;
                 document.getElementById('idcbjour').checked = false;
-                document.getElementById('datepicker').disabled = false;
+                document.getElementById('iddp').disabled = false;
                 document.getElementById('hdebut').disabled = true;
                 document.getElementById('mdebut').disabled = true;
                 document.getElementById('hfin').disabled = true;
@@ -339,13 +138,11 @@
             window.addEventListener("unload", unloadHandlers, false);
         </script>
 
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="./js/ChronoMessage.js"></script>
         <script>
             function emptyAndFill(liste) {            
                 $('#zone_msg').empty();
                 for (var i in liste) {
-                    $('#zone_msg').append(one_msg(i, JSON.stringify(liste[i])));
+                    $('#zone_msg').append(createOneMsg(i, liste[i]));
                 }
             }
         </script>
@@ -359,7 +156,8 @@
 
             // Demande de mise à jour
             socket.on('updateeditlfutur', function (data) {
-                liste = data.totallist;
+                liste = datify(data.totallist);
+                
                 emptyAndFill(liste);
             });
             function sup(i) {
