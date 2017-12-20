@@ -325,7 +325,6 @@ io.sockets.on('connection', function (socket) {
         readFileListAndSendToSocket(socket, 'lperm');
     });
     socket.on('change_listlfutur', function (liste) {
-        console.log(liste);
         liste = datify(liste);
         writeList('lperm', cleanListForLPerm(liste));
         readFileListForTodayAndSendToSocket(socket, [], 'lperm');
