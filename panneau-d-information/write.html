@@ -85,29 +85,55 @@
              */
             function toggle(event) {
                 var cb = event.target;
-                var ips = cb.classList;
+                var el = document.querySelector('#'+cb.id);;
+                var ips = el.dataset.toggleClass;
                 for (var e of document.getElementsByClassName(ips)) {
                     e.disabled = !cb.checked;
                 }
                 cb.disabled = false;
             }
+            
             /*
-             * Action à associer à un chechbox.
-             * Rend "enabled" ou "disabled" tous les éléments qui ont
-             * une classe en commun avec le checkbox (sauf le checkbox lui-même)
-             * selon qu'il soit coché ou non.
+             * Un ChronoMessage est construit à partir d'éléments html trouvés
+             * dans l'élément html elt qui doit contenir :
+             *   - un seul élément de classe date
+             *   - un seul élément de classe jour
+             *   - un seul élément de classe debut
+             *   - un seul élément de classe ordre
+             *   - un seul élément de classe fin
+             *   - un seul élément de classe message
+             * @param {type} elt (l'élément html qui contient les éléments du chrnomessage)
+             * @returns {undefined} le chronomessage
              */
+            function getChronoMessage(elt) {                
+                var eltdate = elt.getElementsByClassName("date")[0];
+                var date = $("#"+eltdate.getAttribute("id")).datepicker('getDate');
+                var jour = elt.getElementsByClassName("jour")[0].value;
+                var hdebut = elt.getElementsByClassName("hdebut")[0].value;
+                var mdebut = elt.getElementsByClassName("mdebut")[0].value;
+                var hordre = elt.getElementsByClassName("hordre")[0].value;
+                var mordre = elt.getElementsByClassName("mordre")[0].value;
+                var hfin = elt.getElementsByClassName("hfin")[0].value;
+                var mfin = elt.getElementsByClassName("mfin")[0].value;
+                var message = elt.getElementsByClassName("message")[0].value;
+                console.log(hdebut + ":" + mdebut);
+                console.log(hordre + ":" + mordre);
+                console.log(hfin + ":" + mfin);
+                console.log(message);
+                return new ChronoMessage(date, jour, new Horaire(hdebut, mdebut), new Horaire(hordre, mordre), new Horaire(hfin, mfin), message);
+            }
             function send(event) {
-                var message = document.getElementById("newtodo").value.trim();
+                
                 var liste = [];
-                for (var e of document.getElementsByClassName("message")) {
-                    liste.push(e.value);
+                
+                for (var e of document.getElementsByClassName("liste")) {
+                    liste.push(getChronoMessage(e));
                 }
-
+                 
+                var message = document.getElementById("newtodo").value.trim();
                 if (message !== "") {
                     //var date = document.getElementById("iddp").value;
                     var date = $("#iddp").datepicker('getDate');
-                    console.log(date);
                     if (date !== null) {
                         date.setHours(23);
                         date.setMinutes(59);
@@ -137,6 +163,7 @@
                 init();
                 return false;
             }
+            
             function one_msg(i, todo) {
                 var classe;
                 if (i % 2 === 0) {
@@ -199,17 +226,19 @@
 
                 var elt = document.createElement("input");
                 elt.setAttribute("id", "idcb" + cname + suffixe);
-                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("class", "toggled");
                 elt.setAttribute("type", "checkbox");
+                elt.addEventListener("click", toggle, false);
+                elt.setAttribute("data-toggle-class", cname + suffixe);
                 span.appendChild(elt);
 
                 elt = document.createElement("select");
                 elt.setAttribute("disabled", true);
                 elt.setAttribute("id", "id" + cname + suffixe);
-                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("class", cname + " " + cname + suffixe);
                 elt.setAttribute("name", "nom");
                 
-                jours = ["Tous les jours", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+                var jours = ["Tous les jours", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
                 for (let j of jours) {
                     let opt = document.createElement("option");
@@ -246,14 +275,16 @@
 
                 var elt = document.createElement("input");
                 elt.setAttribute("id", "id" + cname + suffixe);
-                elt.setAttribute("class", cname + suffixe);
                 elt.setAttribute("type", "checkbox");
+                elt.setAttribute("data-toggle-class", cname + suffixe);
+                elt.addEventListener("click", toggle, false);
+                elt.setAttribute("class", "toggled");
                 span.appendChild(elt);
 
                 elt = document.createElement("select");
                 elt.setAttribute("disabled", true);
                 elt.setAttribute("id", "h" + cname + suffixe);
-                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("class", "h" + cname + " " + cname + suffixe);
                 elt.setAttribute("name", "nom");
 
                 for (let i = 0; i < 24; i++) {
@@ -272,7 +303,7 @@
                 elt = document.createElement("select");
                 elt.setAttribute("disabled", true);
                 elt.setAttribute("id", "m" + cname + suffixe);
-                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("class", "m" + cname + " " + cname + suffixe);
                 elt.setAttribute("name", "nom");
                 elt.setAttribute("size", "1");
 
@@ -299,16 +330,17 @@
 
                 var elt = document.createElement("input");
                 elt.setAttribute("id", "iddate" + suffixid);
-                elt.setAttribute("class", "date");
+                elt.setAttribute("data-toggle-class", "date" + suffixid);
                 elt.setAttribute("type", "checkbox");
+                elt.addEventListener("click", toggle, false);
+                elt.setAttribute("class", "toggled");
                 span.appendChild(elt);
 
                 elt = document.createElement("input");
                 elt.setAttribute("id", "iddp" + suffixid);
                 $(elt).datepicker({setDate: date});
 
-                elt.setAttribute("class", "date");
-                elt.setAttribute("class", "date");
+                elt.setAttribute("class", "date date" + suffixid);
                 elt.setAttribute("type", "text");
                 if (date === null)
                     elt.value = "";
@@ -408,7 +440,7 @@
         <script>
 
             var init = function () {
-                $('#iddp').datepicker({autoSize: true, defaultDate: new Date()});
+                $('#iddp').datepicker({autoSize: true, defaultDate: new Date(), setDate: new Date()});
                 var date = new Date();
 
                 document.getElementById("iddp").value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
