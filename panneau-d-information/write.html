@@ -61,155 +61,11 @@
         <h1 class="titre">Bonjour Maman</h1>        
         <h2 class="titre">Nous sommes le <span id="div_date"></span></h2>
         <h2 class="titre" style="padding-bottom: 5px;">Il est <span id="div_horloge"></span></h2>
-
         <div class="titre" id="zone_msg">
         </div>
 
-        <p>
-            <span class="hsep">Date: <input id="iddate" class="date" type="checkbox" /> <input disabled id="datepicker" type="text" class="date" autofocus/></span>
-            <span class="hsep">Début : <input id="iddebut" type="checkbox" class="debut"/>
-                <select disabled class="debut" id="hdebut" name="nom">
-                    <option>00
-                    <option>01
-                    <option>02
-                    <option>03
-                    <option>04
-                    <option>05
-                    <option>06
-                    <option>07
-                    <option>08
-                    <option>09
-                    <option>10
-                    <option>11 
-                    <option>12
-                    <option>13
-                    <option>14
-                    <option>15
-                    <option>16
-                    <option>17
-                    <option>18
-                    <option>19
-                    <option>20
-                    <option>21 
-                    <option>22
-                    <option>23              
-                </select>: 
-                <select disabled class="debut" id="mdebut" name="nom" size="1">
-                    <option>00
-                    <option>05
-                    <option>10
-                    <option>15
-                    <option>20
-                    <option>25   
-                    <option>30
-                    <option>35
-                    <option>40
-                    <option>45
-                    <option>50
-                    <option>55             
-                </select>
-            </span>
-            <span class="hsep">Jour : <input id="idcbjour" type="checkbox" class="jour"/>
-                <select disabled class="jour" id="idjour">
-                    <option selected>Tous les jours</option>
-                    <option>Lundi</option>
-                    <option>Mardi</option>
-                    <option>Mercredi</option>
-                    <option>Jeudi</option>
-                    <option>Vendredi</option>
-                    <option>Samedi</option>
-                    <option>Dimanche</option>
-                </select>
-            </span>
-            <span class="hsep">Ordre : <input id="idordre" type="checkbox" class="ordre"/>
-                <select disabled class="ordre" id="hordre" name="nom">
-                    <option>00
-                    <option>01
-                    <option>02
-                    <option>03
-                    <option>04
-                    <option>05
-                    <option>06
-                    <option>07
-                    <option>08
-                    <option>09
-                    <option>10
-                    <option>11 
-                    <option>12
-                    <option>13
-                    <option>14
-                    <option>15
-                    <option>16
-                    <option>17
-                    <option>18
-                    <option>19
-                    <option>20
-                    <option>21 
-                    <option>22
-                    <option>23              
-                </select>: 
-                <select disabled class="ordre" id="mordre" name="nom" size="1">
-                    <option>00
-                    <option>05
-                    <option>10
-                    <option>15
-                    <option>20
-                    <option>25   
-                    <option>30
-                    <option>35
-                    <option>40
-                    <option>45
-                    <option>50
-                    <option>55             
-                </select>
-            </span>
 
-            <span class="hsep">Expiration : <input id="idfin" type="checkbox" class ="fin"/>
-                <select disabled id="hfin" class="fin" size="1">
-                    <option>00
-                    <option>01
-                    <option>02
-                    <option>03
-                    <option>04
-                    <option>05
-                    <option>06
-                    <option>07
-                    <option>08
-                    <option>09
-                    <option>10
-                    <option>11 
-                    <option>12
-                    <option>13
-                    <option>14
-                    <option>15
-                    <option>16
-                    <option>17
-                    <option>18
-                    <option>19
-                    <option>20
-                    <option>21 
-                    <option>22
-                    <option>23              
-                </select>: 
-                <select disabled id="mfin" class="fin">
-                    <option>00
-                    <option>05
-                    <option>10
-                    <option>15
-                    <option>20
-                    <option>25   
-                    <option>30
-                    <option>35
-                    <option>40
-                    <option>45
-                    <option>50
-                    <option>55             
-                </select>   
-            </span>
-        </p>
-        <textarea cols="80" rows="10" placeholder="Un message" name="newtodo" id="newtodo" ></textarea>
-        <button id="sendbutton">Envoyer le message</button>
-
+        <div id="msgarea"></div>
         <p>
             <img src="images/image0.png" alt="image0" />
             <img src="images/image1.png" alt="image1" />
@@ -245,11 +101,13 @@
                 var message = document.getElementById("newtodo").value.trim();
                 var liste = [];
                 for (var e of document.getElementsByClassName("message")) {
-                    liste.push(JSON.parse(e.value));
+                    liste.push(e.value);
                 }
 
                 if (message !== "") {
-                    var date = $("#datepicker").datepicker("getDate");
+                    //var date = document.getElementById("iddp").value;
+                    var date = $("#iddp").datepicker('getDate');
+                    console.log(date);
                     if (date !== null) {
                         date.setHours(23);
                         date.setMinutes(59);
@@ -264,7 +122,7 @@
                     var hrf = new Horaire(
                             (document.getElementById("hfin").value),
                             (document.getElementById("mfin").value));
-                            
+
                     console.log(hrf.toString());
                     var cm = new ChronoMessage(date, document.getElementById("idjour").value, hrd, hro, hrf, message);
 
@@ -287,13 +145,13 @@
                     classe = "impair";
                 }
                 //return "<p class=\"liste " + classe + "\"><span class=\"cliquable\" onclick=\"up(" + i + ")\"> (↑) </span><span class=\"cliquable\" onclick=\"down(" + i + ")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup(" + i + ")\"> (✘) </span><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";            
-                return "<p class=\"liste " + classe + "\"><button class=\"cliquable\" onclick=\"sup(" + i + ")\"> ✘ </button><textarea class=\"message\" cols=\"150\" rows=\"3\">" + todo + "</textarea></p>";
+                return "<p num=\"" + i + "\" class=\"liste " + classe + "\"><button class=\"cliquable\" onclick=\"sup(" + i + ")\"> ✘ </button><textarea class=\"message\" cols=\"150\" rows=\"3\">" + todo + "</textarea></p>";
             }
             function mutex(event) {
                 var cbjour = document.getElementById("idcbjour");
                 var cbdate = document.getElementById("iddate");
                 var jourchoice = document.getElementById("idjour");
-                var datechoice = document.getElementById("datepicker");
+                var datechoice = $("#iddp");
 
                 if (cbjour === event.target) {
                     if (cbjour.checked) {
@@ -326,23 +184,234 @@
         -->
         <script src="./js/hostname.js"></script>
         <script>
+            function format(i) {
+                if (i < 10) {
+                    return "0" + i;
+                } else {
+                    return i;
+                }
+            }
+
+            function createJour(name, cname, suffixe = "",  jour = "") {
+                var span = document.createElement("span");
+                span.setAttribute("class", "hsep");
+                span.appendChild(document.createTextNode(name + " : "));
+
+                var elt = document.createElement("input");
+                elt.setAttribute("id", "idcb" + cname + suffixe);
+                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("type", "checkbox");
+                span.appendChild(elt);
+
+                elt = document.createElement("select");
+                elt.setAttribute("disabled", true);
+                elt.setAttribute("id", "id" + cname + suffixe);
+                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("name", "nom");
+                
+                jours = ["Tous les jours", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+                for (let j of jours) {
+                    let opt = document.createElement("option");
+                    opt.appendChild(document.createTextNode(j));
+                    elt.appendChild(opt);
+                }
+                
+                try {
+                    elt.selectedIndex = jours.indexOf(jour);
+                } catch (e) {
+                    
+                }
+
+                span.appendChild(elt);
+
+                return span;
+            }
+            /*
+             <span class="hsep">Début : <input id="iddebut" type="checkbox" class="debut"/>
+             <select disabled class="debut" id="hdebut" name="nom">
+             <option>00
+             <option>23              
+             </select>: 
+             <select disabled class="debut" id="mdebut" name="nom" size="1">
+             <option>00
+             <option>55             
+             </select>
+             </span>
+             */
+            function createHoraire(name, cname, suffixe = "", horaire = null) {
+                var span = document.createElement("span");
+                span.setAttribute("class", "hsep");
+                span.appendChild(document.createTextNode(name + " : "));
+
+                var elt = document.createElement("input");
+                elt.setAttribute("id", "id" + cname + suffixe);
+                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("type", "checkbox");
+                span.appendChild(elt);
+
+                elt = document.createElement("select");
+                elt.setAttribute("disabled", true);
+                elt.setAttribute("id", "h" + cname + suffixe);
+                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("name", "nom");
+
+                for (let i = 0; i < 24; i++) {
+                    let opt = document.createElement("option");
+                    opt.appendChild(document.createTextNode(format(i)));
+                    elt.appendChild(opt);
+                }
+                if (horaire !== null) {
+                    elt.selectedIndex = horaire.h;
+                }
+
+                span.appendChild(elt);
+
+                span.appendChild(document.createTextNode(" : "));
+
+                elt = document.createElement("select");
+                elt.setAttribute("disabled", true);
+                elt.setAttribute("id", "m" + cname + suffixe);
+                elt.setAttribute("class", cname + suffixe);
+                elt.setAttribute("name", "nom");
+                elt.setAttribute("size", "1");
+
+                for (let i = 0; i < 60; i += 5) {
+                    let opt = document.createElement("option");
+                    opt.appendChild(document.createTextNode(format(i)));
+                    elt.appendChild(opt);
+                }
+                if (horaire !== null) {
+                    elt.selectedIndex = horaire.m %5;
+                }
+
+                span.appendChild(elt);
+
+                return span;
+            }
+            /* <span class="hsep">Date: <input id="iddate" class="date" type="checkbox" />
+             * <input disabled id="datepicker" type="text" class="date" autofocus/></span>
+             */
+            function createDate(suffixid = "", date = null) {
+                var span = document.createElement("span");
+                span.setAttribute("class", "hsep");
+                span.appendChild(document.createTextNode("Date : "));
+
+                var elt = document.createElement("input");
+                elt.setAttribute("id", "iddate" + suffixid);
+                elt.setAttribute("class", "date");
+                elt.setAttribute("type", "checkbox");
+                span.appendChild(elt);
+
+                elt = document.createElement("input");
+                elt.setAttribute("id", "iddp" + suffixid);
+                $(elt).datepicker({setDate: date});
+
+                elt.setAttribute("class", "date");
+                elt.setAttribute("class", "date");
+                elt.setAttribute("type", "text");
+                if (date === null)
+                    elt.value = "";
+                else
+                    elt.value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+                elt.setAttribute("autofocus", true);
+                span.appendChild(elt);
+
+                return span;
+            }
+            /*
+             *  <textarea cols="80" rows="10" placeholder="Un message" name="newtodo" id="newtodo" ></textarea>        
+             */
+            function createTextArea(id) {
+                var elt = document.createElement("textarea");
+                elt.setAttribute("id", id);
+                elt.setAttribute("name", id);
+                elt.setAttribute("cols", 80);
+                elt.setAttribute("rows", 10);
+                elt.setAttribute("placeholder", "Un message");
+
+                return elt;
+            }
+            /*
+             * <button id="sendbutton">Envoyer le message</button>
+             */
+            function createSendButton(id) {
+                var elt = document.createElement("button");
+                elt.setAttribute("id", id);
+                elt.appendChild(document.createTextNode("Envoyer le message"));
+
+                return elt;
+            }
+            function create() {
+                var n = document.getElementById("msgarea");
+                var p = document.createElement("p");
+                p.appendChild(createDate());
+                p.appendChild(createHoraire("Début", "debut"));
+                p.appendChild(createJour("Jour", "jour"));
+                p.appendChild(createHoraire("Ordre", "ordre"));
+                p.appendChild(createHoraire("Expiration", "fin"));
+                p.appendChild(createTextArea("newtodo"));
+                p.appendChild(createSendButton("sendbutton"));
+
+                n.appendChild(p);
+            }
+
+
+            function createOneMsg(i, cm) {
+                var classe;
+                if (i % 2 === 0) {
+                    classe = "pair";
+                } else {
+                    classe = "impair";
+                }
+                var p = document.createElement("p");
+                p.setAttribute("class", "liste " + classe);
+                p.setAttribute("num", i);
+                var elt;
+                elt = document.createElement("button");
+                elt.setAttribute("class", "cliquable");
+                elt.appendChild(document.createTextNode("X"));
+                elt.addEventListener("click", sup, false);
+
+                p.appendChild(elt);
+
+                p.appendChild(createDate(i, cm.date));
+                p.appendChild(createHoraire("Début", "debut", i, cm.debut));
+                p.appendChild(createJour("Jour", "jour", i, cm.jour));
+                p.appendChild(createHoraire("Ordre", "ordre", i, cm.ordre));
+                p.appendChild(createHoraire("Expiration", "fin", i, cm.fin));
+
+                elt = document.createElement("textarea");
+                elt.setAttribute("class", "message");
+                elt.appendChild(document.createTextNode(cm.toString()));
+
+                p.appendChild(elt);
+
+                return p;
+
+                //return "<p class=\"liste " + classe + "\"><span class=\"cliquable\" onclick=\"up(" + i + ")\"> (↑) </span><span class=\"cliquable\" onclick=\"down(" + i + ")\"> (↓) </span><span class=\"cliquable\" onclick=\"sup(" + i + ")\"> (✘) </span><textarea class=\"message\" cols=\"120\" rows=\"1\">" + todo + "</textarea></p>";            
+                //return "<p class=\"liste " + classe + "\"><button class=\"cliquable\" onclick=\"sup(" + i + ")\"> ✘ </button>\n\
+                //        <textarea class=\"message\" cols=\"150\" rows=\"3\">" + todo + "</textarea></p>";
+            }
+
             window.onload = function () {
                 horloge(document);
                 setInterval(horloge, 1000, document);
+                create();
             };
         </script>
         <script>
             $(function () {
-                $("#datepicker").datepicker();
+                $("#iddp").datepicker();
             });
         </script>
         <script>
 
             var init = function () {
-                $('#datepicker').datepicker();
+                $('#iddp').datepicker({autoSize: true, defaultDate: new Date()});
                 var date = new Date();
 
-                document.getElementById("datepicker").value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+                document.getElementById("iddp").value = date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
 
                 document.getElementById("hordre").selectedIndex = date.getHours();
                 document.getElementById("mordre").selectedIndex = 0;
@@ -357,7 +426,7 @@
                 document.getElementById('iddebut').checked = false;
                 document.getElementById('idfin').checked = false;
                 document.getElementById('idcbjour').checked = false;
-                document.getElementById('datepicker').disabled = false;
+                $("#iddp").disabled = false;
                 document.getElementById('hdebut').disabled = true;
                 document.getElementById('mdebut').disabled = true;
                 document.getElementById('hordre').disabled = true;
@@ -409,11 +478,11 @@
                 $('#zone_msg').empty();
                 data.todaylist = datify(data.todaylist);
                 for (let i in data.todaylist) {
-                    $('#zone_msg').append(one_msg(i, JSON.stringify(data.todaylist[i])));
+                    $('#zone_msg').append(createOneMsg(i, data.todaylist[i]));
                 }
             });
-            function sup(i) {
-                socket.emit('sup_msg', i);
+            function sup(event) {
+                socket.emit('sup_msg', event.target.parentElement.getAttribute("num"));
             }
         </script>
     </body>
