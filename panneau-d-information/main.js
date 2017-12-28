@@ -265,18 +265,20 @@ app.use(session({secret: 'todotopsecret'}))
             }
             next();
         })
-        .get('/read', function (req, res) {
+        //.get('/read', function (req, res) {
+        .get('/0e3311ad0aa6ce15a0c5f25f6b621ff253224fe7fdd4dd29df822e2ea8ef5772', function (req, res) {
             res.sendFile(__dirname + '/read.html');
         })
-        .get('/write', function (req, res) {
+        //.get('/write', function (req, res) {
+        .get('/a740bcf98fd3162935660b257414de791506b41f84c32ebdb86397a19b2e7dbc', function (req, res) {
             res.sendFile(__dirname + '/write.html');
         })
         /* Edition du fichier lfutur */
-        .get('/editlfutur', function (req, res) {
+        //.get('/editlfutur', function (req, res) {
+        .get('/4de17cffd0b675c4f1b2b49e735dc5e76ac251bbef8ea92395375cf15296bbfe', function (req, res) {
             res.sendFile(__dirname + '/editlfutur.html');
         })
-
-        /* Supprime un élément de la todaylist */
+        /* Supprime un élément de la todaylist 
         .get('/write/supprimer/:id', function (req, res) {
             if (req.params.id !== '') {
                 todaylist(req.params.id, 1);
@@ -284,16 +286,19 @@ app.use(session({secret: 'todotopsecret'}))
                 req.socket.broadcast.emit('update', {todaylist: todaylist});
             }
             res.redirect('/write');
-        })
+        })*/
         // Pour pouvoir importer des modules dans les clients.        
         .use('/js', express.static('js'))
         // Pour pouvoir afficher des images.        
         .use('/images', express.static('images'))
-
-        /* On redirige vers la todaylist si la page demandée n'est pas trouvée */
         .use(function (req, res, next) {
+            res.status(404).send("")
+        })
+        /* On redirige vers la todaylist si la page demandée n'est pas trouvée */
+        /*.use(function (req, res, next) {
             res.redirect('/read');
-        });
+        })*/;
+
 
 var todaylist = [];
 
