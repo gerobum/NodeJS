@@ -6,11 +6,13 @@
     "contributors": [],
     "dependencies": {
         "express": "~4.11.0",
-        "ejs": "~2.5.5",
+        "ejs": "~>2.5.5",
         "cookie-session": "~1.1.0",
         "body-parser": "~1.10.1",
         "socket.io": "~1.2.1",
         "ent": "~0.1.0",
         "mongodb": "~2.2.19"
-    }
+    },
+    "author": "gero <gerobum@gmail.com>",
+    "description": "Le panneau d'information pour mamie"
 }
